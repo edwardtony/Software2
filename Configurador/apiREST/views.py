@@ -23,6 +23,10 @@ def consoleLog(text='Información',data= ''):
 @csrf_exempt
 def data(request):
 	characters = Character.objects.all()
-	serializer = CharacterSerializer(characters, many=True)
-	print(serializer.data)
-	return JSONResponse(serializer.data)
+	stages = Stage.objects.all()
+
+	serializer_c = CharacterSerializer(characters, many=True)
+	serializer_s = StageSerializer(stages, many=True)
+
+	responde = {'characters':serializer_c.data,'scenarios':serializer_s.data}
+	return JSONResponse(responde)

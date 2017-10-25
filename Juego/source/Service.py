@@ -1,9 +1,12 @@
 import requests
+import urllib2
+import json
 
 class DataService():
 	def __init__(self):
 		pass
-	
+
 	def get_data(self):
-		r = requests.get('http://localhost:8000/data/')
-		print(r.json())
+		request = urllib2.urlopen('http://localhost:8000/data/').read()
+		content = json.loads(request)
+		return content

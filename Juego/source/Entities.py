@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 import pygame
 from States import AnimatedState, StaticState
 
-""" 
+"""
     Este es el archivo que se encargará de trabajar todas entidades del juego
 """
 
 class GameEntity(pygame.sprite.Sprite):
 
-    """ 
+    """
         Entidad Padre que se encarga de implementar el modelo de los personajes,
         gestionar sus estados y firmar el método Update para los renderizados de los
         Sprites.
@@ -46,8 +46,8 @@ class GameEntity(pygame.sprite.Sprite):
         self.display.blit(self.image, (self.rect.x, self.rect.y))
 
 class Character(GameEntity):
-    
-    """ 
+
+    """
         Clase encargada de gestionar la configuración y acciones de un personaje,
         Extiende de GameEntity
     """
@@ -62,6 +62,7 @@ class Character(GameEntity):
         self.load_image()
         self.image = self.current_state.get_sprite()
         self.rect = self.scale(scale)
+        self.pos_x = px
         self.rect.x = px
         self.rect.y = py
         self.accelerating = False
@@ -113,7 +114,7 @@ class Character(GameEntity):
     # Método encargado del salto del personaje
     def jump(self, jump_force):
         self.impulse(self.dx, -jump_force)
-        
+
     # Método encargado de las interacciones del teclado con el personaje (KEY_DOWN)
     def key_down(self, key):
         if key == pygame.K_UP:
@@ -130,7 +131,6 @@ class Character(GameEntity):
             self.dx = self.speed
         if key == pygame.K_RCTRL or key == pygame.K_LCTRL:
             self.mode = int(self.mode == 0)
-            print(self.mode)
             self.load_image()
 
     # Método encargado de las interacciones del teclado con el personaje (KEY_UP)
@@ -152,8 +152,15 @@ class Character(GameEntity):
     # Método que actualiza el estado y Sprite del Character
     def update(self, dt):
         self.calculate_gravity()
+        # print(self.rect)
+        if self.pos_x + self.dx > 0 and self.pos_x + self.dx < 10240:
+            self.pos_x = self.pos_x + self.dx
 
-        self.rect.x = self.rect.x + self.dx
+        if self.pos_x + self.dx > 420:
+            pass
+        elif self.rect.x + self.dx > 0 and self.rect.x + self.dx < 850:
+           self.rect.x = self.rect.x + self.dx
+
         self.rect.y = self.rect.y + self.dy
 
         if self.rect.y+self.rect.height > self.display.get_height():
@@ -163,4 +170,3 @@ class Character(GameEntity):
 
         self.current_state.update(dt)
         self.image = self.current_state.get_sprite()
-

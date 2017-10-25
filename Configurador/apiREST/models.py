@@ -9,9 +9,7 @@ import os
 class Teacher(models.Model):
     name = models.CharField(max_length=50)
     course = models.CharField(max_length=30)
-    image = models.FileField(upload_to= 'teacher')
-
-
+    image = models.CharField(max_length=200)
 
 class Question(models.Model):
     description = models.CharField(max_length=200)
@@ -28,7 +26,7 @@ class Stage(models.Model):
         ('HARD','DIFÍCIL'),
     )
     name = models.CharField(max_length=30)
-    image = models.FileField(upload_to = 'stage')
+    image = models.CharField(max_length=200)
     dificulty = models.CharField(max_length=10, choices=STATUS_CHOICES, default='EASY')
     teacher = models.ForeignKey(Teacher,on_delete = models.CASCADE)
     quantity_question = models.IntegerField(default=1)
@@ -65,7 +63,7 @@ class Health(models.Model):
 
 class SuperMode(models.Model):
     duration = models.IntegerField(default=30)
-    image = models.FileField(upload_to= 'super-mode')
+    image = models.CharField(max_length=200)
 
     def __str__(self):
         return "{duration} ".format(duration = self.duration)
@@ -84,7 +82,9 @@ class Character(models.Model):
     health = models.ForeignKey(Health, on_delete=models.CASCADE)
     super_mode = models.ForeignKey(SuperMode, on_delete=models.CASCADE)
     damage_level = models.ForeignKey(DamageLevel, on_delete=models.CASCADE)
-    photo_url = models.CharField(max_length=200)
+    photo_normal = models.CharField(max_length=200)
+    photo_super = models.CharField(max_length=200)
+    photo_ultra = models.CharField(max_length=200)
 
     def __str__(self):
         return "{name} {super_mode}".format(name = self.name, super_mode = self.super_mode)
@@ -92,6 +92,8 @@ class Character(models.Model):
 class Player(models.Model):
     character = models.ForeignKey(Character)
     name = models.CharField(max_length=40)
+    entrant = models.CharField(max_length=10)
+    graduate = models.CharField(max_length=10)
     score = models.IntegerField(default=0)
 
     def __str__(self):
