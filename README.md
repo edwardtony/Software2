@@ -14,6 +14,7 @@ Este es un proyecto para el curso de Software2 de la Universidad de Lima
       - ...
     - README.md
     
-- levantar el entorno virturl -> source venv_software2/bin/activate
+- instalar dependencias -> pip install -r requirements.txt
+- levantar el entorno virtural -> source venv_software2/bin/activate
 - levantar el servidor -> python Configurador/manage.py runserver 
 - levantar el juego (en otro terminal) -> cd juego/ -> python main.py
