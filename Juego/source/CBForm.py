@@ -6,6 +6,13 @@ import pygame
 from pygame.locals import *
 from source.Utils import *
 
+
+"""
+    Version: 0.8
+    Author: Anthony Del Pozo Matías
+    Email: delan1997@gmail.com
+"""
+
 class FormFactory():
 
     """

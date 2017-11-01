@@ -11,13 +11,46 @@ class Teacher(models.Model):
     course = models.CharField(max_length=30)
     image = models.CharField(max_length=200)
 
+    def as_dict(self):
+        result = dict(
+            name = self.name,
+            course = self.course,
+            question = [question.as_dict() for question in self.question_set.all()],
+            image = self.image
+        )
+        return result
+
+    def __str__(self):
+        return "{name} {course}".format(name = self.name, course = self.course)
+
 class Question(models.Model):
     description = models.CharField(max_length=200)
     teacher = models.ForeignKey(Teacher,on_delete=models.CASCADE)
 
+    def as_dict(self):
+        result = dict(
+            description = self.description,
+            alternative = [alternative.as_dict() for alternative in self.alternative_set.all()]
+        )
+        return result
+
+    def __str__(self):
+        return "{description} {teacher}".format(description = self.description, teacher = self.teacher)
+
 class Alternative(models.Model):
     description = models.CharField(max_length=200)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    is_true = models.BooleanField(default=False)
+
+    def as_dict(self):
+        result = dict(
+            description = self.description,
+			is_true = self.is_true
+        )
+        return result
+
+    def __str__(self):
+        return "{description} {question}".format(description = self.description, question = self.question)
 
 class Stage(models.Model):
     STATUS_CHOICES = (
@@ -31,6 +64,21 @@ class Stage(models.Model):
     teacher = models.ForeignKey(Teacher,on_delete = models.CASCADE)
     quantity_question = models.IntegerField(default=1)
     time_question = models.IntegerField(default=30)
+
+    def as_dict(self):
+        result = dict(
+            name = self.name,
+            image = self.image,
+            dificulty = self.dificulty,
+            teacher = self.teacher.as_dict(),
+            quantity_question = self.quantity_question,
+            time_question = self.time_question
+        )
+        return result
+
+    def __str__(self):
+        return "{name} {pk}".format(name = self.name, pk = self.pk)
+
 
 class StageConfiguration(models.Model):
     stage = models.ForeignKey(Stage, on_delete= models.CASCADE)
@@ -68,6 +116,13 @@ class SuperMode(models.Model):
     def __str__(self):
         return "{duration} ".format(duration = self.duration)
 
+    def as_dict(self):
+        result = dict(
+            duration = self.duration,
+			image = self.image
+        )
+        return result
+
 class DamageLevel(models.Model):
     quantity = models.IntegerField(default=1)
 
@@ -86,15 +141,40 @@ class Character(models.Model):
     photo_super = models.CharField(max_length=200)
     photo_ultra = models.CharField(max_length=200)
 
+    def as_dict(self):
+        result = dict(
+            name = self.name,
+            velocity = self.velocity.quantity,
+            resistance = self.resistance.quantity,
+            jump = self.jump.distance,
+            health = self.health.quantity,
+			super_mode = self.super_mode.as_dict(),
+			damage_level = self.damage_level.quantity,
+			photo_normal = self.photo_normal,
+			photo_super = self.photo_super,
+			photo_ultra = self.photo_ultra
+        )
+        return result
+
     def __str__(self):
-        return "{name} {super_mode}".format(name = self.name, super_mode = self.super_mode)
+        return "{name}".format(name = self.name)
 
 class Player(models.Model):
-    character = models.ForeignKey(Character)
     name = models.CharField(max_length=40)
-    entrant = models.CharField(max_length=10)
-    graduate = models.CharField(max_length=10)
+    initial_year = models.CharField(max_length=10, default="2017-01")
+    finish_year = models.CharField(max_length=10, default="2017-01")
     score = models.IntegerField(default=0)
+    character = models.ForeignKey(Character)
+
+    def as_dict(self):
+        result = dict(
+            name = self.name,
+            initial_year = self.initial_year,
+            finish_year = self.finish_year,
+            score = self.score,
+            character = self.character.as_dict()
+        )
+        return result
 
     def __str__(self):
-        return "{character} {name} {score}".format(character = self.character, name = self.name, score = self.score)
+        return "{name} {score} {character}".format(name = self.name, score = self.score, character = self.character)
