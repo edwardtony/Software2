@@ -53,12 +53,18 @@ import pygame
 
 # ------------------------------------------ DB ------------------------------------------
 
+class TeacherDB():
+    def __init__(self,object):
+        self.name = object['name']
+        self.course = object['course']
+        self.image = object['image']
+
 class ScenarioDB():
     def __init__(self,object):
         self.name = object['name']
         self.image = object['image']
         self.dificulty = object['dificulty']
-        self.teacher = object['teacher']
+        self.teacher = TeacherDB(object['teacher'])
         self.quantity_question = object['quantity_question']
         self.time_question = object['time_question']
 

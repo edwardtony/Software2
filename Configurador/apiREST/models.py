@@ -178,3 +178,25 @@ class Player(models.Model):
 
     def __str__(self):
         return "{name} {score} {character}".format(name = self.name, score = self.score, character = self.character)
+
+# ---------------------------------- EXTRA ----------------------------------
+class Message(models.Model):
+    name = models.CharField(max_length=30)
+    description = models.CharField(max_length=100)
+    scenario = models.IntegerField(default=0)
+    position = models.IntegerField(default=0)
+
+    def as_dict(self):
+        result = dict(
+            name = self.name,
+            description = self.description,
+            scenario = self.scenario,
+            position = self.position,
+        )
+        return result
+
+    def __str__(self):
+        return "{name} {description} {scenario} {position}".format(name = self.name,
+                                                                   description = self.description,
+                                                                   scenario = self.scenario,
+                                                                   position = self.position)

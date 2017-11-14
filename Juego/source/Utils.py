@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
-""" 
+# -*- coding: utf-8 -*-
+"""
     Este es el archivo que contiene clases y métodos útiles para el desarrollo del juego
 """
 
@@ -15,3 +15,4 @@ class Color:
     WHITE = (255,255,255)
     GRAY = (50,50,50)
     YELLOW = (247, 177, 33)
+    RED = (255,0,0)

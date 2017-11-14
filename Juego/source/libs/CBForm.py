@@ -68,6 +68,7 @@ class EditText(FormComponent):
         self.value = value
         self.max = max
         self.focus = focus
+        self.alert = False
 
     def set_value(self, value):
         self.value = value
@@ -82,7 +83,16 @@ class EditText(FormComponent):
 
     # Cambiar el color de los bordes, se modifican con el atributo Focus
     def load_border_color(self):
+        if self.alert:
+            return Color.RED
         return Color.YELLOW if self.focus else Color.BLACK
+
+    # Validar que el input no esté vacío
+    def is_empty(self):
+        return self.value.strip() == ''
+
+    def empty_alert(self):
+        self.alert = True
 
     # Dibujar el input en el Display
     def draw(self):
@@ -211,6 +221,7 @@ class Title(FormComponent):
         self.h = self.get_h(h)
         self.value = value
         self.color = color
+        self.hide = False
 
     def get_h(self,h):
         hs = {
@@ -226,9 +237,16 @@ class Title(FormComponent):
         return hs[h]
 
     def draw(self):
+        self.hide = not self.hide
+        if self.hide:
+            return
         font = pygame.font.SysFont(None, self.h)
         title = font.render(self.value, True, self.color)
         self.form.screen.blit(title, (self.x, self.y))
+
+# Título que parpadea
+class FlashTitle():
+    pass
 
 class PrettyTitle():
     # Constructor

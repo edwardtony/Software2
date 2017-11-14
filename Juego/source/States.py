@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import pygame
 
 class EntityState(object):
@@ -26,24 +28,26 @@ class AnimatedState(EntityState):
 
         self.images = images
         self.number_of_sprites = number_of_sprites
-        self.name = name
         self.current_sprite = self.images.subsurface(0,0,self.images.get_width()/self.number_of_sprites, self.images.get_height())
         self.speed = speed
+        self.name = name
         self.width = self.images.get_width()/self.number_of_sprites
         self.height = self.images.get_height()
         self.is_loop = False
         self.current_delta =  0
 
     def update(self, dt):
-        self.current_delta = self.current_delta + dt
+        # OJO: La utilidad del DT se está probando
+        self.current_delta = self.current_delta + 20
 
         if self.current_delta > self.speed:
-            self.current_delta = 0
+            self.current_delta = 60
 
         sprite_index =  int((self.current_delta*self.number_of_sprites/self.speed))
 
-        if sprite_index > self.number_of_sprites-1:
-            sprite_index = self.number_of_sprites-1
+        # Comenté esto
+        # if sprite_index > self.number_of_sprites-1:
+        #     sprite_index = self.number_of_sprites-1
 
         self.current_sprite = self.images.subsurface(
                               sprite_index*self.width,
@@ -55,4 +59,3 @@ class StaticState(EntityState):
 
         self.current_sprite = image
         self.name = name
-
