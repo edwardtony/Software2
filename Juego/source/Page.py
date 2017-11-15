@@ -142,7 +142,6 @@ class InitialPage(Page):
         # self.manager.current_page = self.manager.scenario1
         # self.manager.current_page.manage()
 
-
 class ScenarioPage(Page):
 
     DIFICULTY = {
@@ -157,26 +156,49 @@ class ScenarioPage(Page):
         }
     }
 
+    SCORE = {
+        'book.png': {
+            'score': 20
+        },
+        'contract.png':{
+            'score': 100
+        },
+        'phone.png': {
+            'score': - 10
+        },
+        'water.png': {
+            'score': 10
+        }
+    }
+
     def __init__(self, screen, scenario, manager):
         self.screen = screen
         self.scenario = scenario
-        print(self.scenario.teacher.name)
-        print(self.scenario.teacher.course)
-        print(self.scenario.teacher.image)
+        # print(self.scenario.teacher.name)
+        # print(self.scenario.teacher.course)
+        # print(self.scenario.teacher.image)
         self.manager = manager
         background = pygame.image.load(scenario.image).convert()
         self.background = pygame.transform.scale(background, (10240,720))
         self.camera_pos = 0
         self.obstacles = []
+        self.platforms = Platforms(manager)
         self.generate_obstacles()
+        self.generate_platforms()
 
     def manage(self):
         # Objetos en pantalla
         # Corregir el nombre de la imagen, no en duro
         self.character = Character(self.screen,self.manager.player.character.character,3,50,470)
         self.boss = Boss(self.screen,self.scenario.teacher,3,400,470,1.2)
+        self.form = Form(self.screen)
+        self.name = Title(10,10,self.manager.player.name,Color.BLACK,'H3')
+        self.year = Title(430,10,self.manager.player.entrant,Color.BLACK,'H3')
+        self.form.add_child(self.name)
+        self.form.add_child(self.year)
 
     def draw(self):
+        # print(pygame.time.get_ticks())
         calc = self.character.pos_x - self.screen.get_rect().width / 2
         if calc <= 0:
             calc = 0
@@ -186,31 +208,83 @@ class ScenarioPage(Page):
         # screen_pos =  calc if self.character.pos_x  > calc else self.character.pos_x
         self.screen.blit(self.background, (-calc, -120))
         self.character.update(self.manager.dt)
+        self.platforms.do(self.character)
+        self.collide_obstacles()
         self.character.draw()
+        self.form.draw()
+        font = pygame.font.SysFont(None, 60)
+        title = font.render(str(self.manager.player.score), True, Color.BLACK)
+        self.screen.blit(title, (900,10))
+        # self.platforms.draw()
+
+        if self.manager.pause:
+            s = pygame.Surface((1000, 1000))
+            s.fill(Color.BLACK)
+            s.set_colorkey(Color.BLACK)
+            pygame.draw.rect(s, Color.BLACK,(0,0,self.manager.size[0],self.manager.size[1]), 0)
+            s.set_alpha(75)
         # self.boss.update(self.manager.dt)
         # self.boss.draw()
 
+        # DRAW METHOD
+        display = self.manager.screen
+        for p in self.platforms.container:
+            self.manager.screen.blit(self.image, (p.x1 -self.character.pos_x ,p.y))
+            # pygame.draw.line(display, Color.WHITE, (p.x1 -self.character.pos_x , p.y), (p.x2 -self.character.pos_x, p.y),1)
 
         for obstacle in self.obstacles:
-            self.screen.blit(obstacle['image'], (obstacle['pos'] -self.character.pos_x,530))
+            self.screen.blit(obstacle['image'], (obstacle['pos'] -self.character.pos_x,500))
 
     def key_update(self, event):
+        if event.type == KEYDOWN and event.key == pygame.K_p and not self.manager.current_page == self.manager.initial_page:
+            self.manager.pause = not self.manager.pause
+        if self.manager.pause:
+            self.character.pause()
+            return
+        else:
+            self.character.play()
         if event.type == KEYDOWN:
             self.character.key_down(event.key)
         elif event.type == KEYUP:
             self.character.key_up(event.key)
 
     def generate_obstacles(self):
+        # self.obstacles_group = pygame.sprite.Group()
         pos_temp = 1500
         path_obstacles = Config.PATH_OBSTACLES
         obstacles_name = ['book.png','phone.png','water.png']
         max = self.DIFICULTY[self.scenario.dificulty]['cant_obstacles']
         for x in range(0,max):
-            pos_temp = pos_temp + random.randint(100,1000)
+            name = obstacles_name[random.randint(0,2)]
+            pos_temp = pos_temp + random.randint(100,400)
+            print(pos_temp)
+            obstacle_image = pygame.transform.scale(pygame.image.load(path_obstacles + name),(50,50))
             self.obstacles.append({
-                'image': pygame.transform.scale(pygame.image.load(path_obstacles + obstacles_name[random.randint(0,2)]),(50,50)),
-                'pos': pos_temp
+                'image': obstacle_image,
+                'pos': pos_temp,
+                'name': name
             })
+            # self.obstacles_group.add(obstacle_image)
+
+    def collide_obstacles(self):
+        for index, obstacle in enumerate(self.obstacles):
+            if(self.character.rect.y == 440 and self.character.pos_x  + 500 >= obstacle['pos'] and self.character.pos_x + 500 <= obstacle['pos'] + 50):
+                print(self.manager.player.score)
+                self.manager.player.score = self.manager.player.score + self.SCORE[obstacle['name']]['score']
+                self.obstacles.pop(index)
+
+            # print(self.character.pos_x)
+            # print(self.character.rect.y)
+            # print(obstacle['pos'])
+            # print(pygame.sprite.spritecollide(self.image.get_rect(), obstacle['image'].get_rect(), True))
+            # if(self.image.get_rect().colliderect(obstacle['image'].get_rect())):
+                # print(obstacle['name'])
+
+    def generate_platforms(self):
+        self.image = pygame.image.load(Config.PATH_OBSTACLES + "obstacle.png")
+        for i in range(0, 10):
+            self.platforms.add(Platform(1500 + i*400, random.randint(300,500), 200))
+
 
 class Platform:
     def __init__(self,x,y,width):
@@ -219,19 +293,20 @@ class Platform:
         self.x2 = x + width
 
     def test(self,player):
-        if player.x < self.x1 or player.x > self.x2: return None
-        # if player. <= self.y and player.y + player.velocity >= self.y: return self
+        if player.pos_x  + player.image.get_rect().width < self.x1 - 440 or player.pos_x > self.x2 - 480: return None
+        if player.dy >= 0 and player.rect.y + player.image.get_rect().height <= self.y and player.rect.y + player.image.get_rect().height + 10 >= self.y: return self
         return None
 
 class Platforms:
-    def __init__(self):
+    def __init__(self, manager):
         self.container = []
+        self.manager = manager
 
     def add(self,p):
         self.container.append(p)
 
     def testCollision(self,player):
-        if not player.falling: return False
+        if not player.jumping: return False
         for p in self.container:
             result = p.test(player)
             if result:
@@ -242,9 +317,15 @@ class Platforms:
         return False
 
     def draw(self):
-        display = pygame.display.get_surface()
+        display = self.manager.screen
+        # image = pygame.image.load(Config.PATH_OBSTACLES + "obstacle.png")
+        # self.display.blit(image, (self.rect.x, self.rect.y))
         for p in self.container:
-            pygame.draw.line(display, Color.WHITE, (p.x1, p.y), (p.x2, p.y),1)
+            pass
+            # print("p",p.x1,p.y)
+            # self.manager.screen.blit(image, (500, 200))
+            # self.display.blit(image, (self.rect.x, self.rect.y))
+            # pygame.draw.line(display, Color.WHITE, (p.x1, p.y), (p.x2, p.y),1)
 
     def do(self, player):
         self.testCollision(player)

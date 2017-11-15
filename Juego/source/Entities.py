@@ -72,7 +72,7 @@ class Character(GameEntity):
         self.current_platform = None
         self.jumping = False
         self.base = 50
-
+        self.alt = 0.7
 
     # Permite dimensionar la imagen escalándola de tamaño
     def scale(self,scale):
@@ -112,11 +112,20 @@ class Character(GameEntity):
 
     # Método encargado de gestionar la lógica de la gravedad, gravedad es la velocidad con la cual caen los objetos en el juego
     def calculate_gravity(self):
-        alt = 0.7
         if self.dy == 0:
-            self.dy = alt
+            self.dy = self.alt
         else:
-            self.dy = self.dy + alt
+            self.dy = self.dy + self.alt
+
+    # Pausar al personaje
+    def pause(self):
+        self.dx = 0
+        self.dy = 0
+        self.alt = 0
+
+    # Play al personaje
+    def play(self):
+        self.alt = 0.7
 
     # Método encargado del salto del personaje
     def jump(self, jump_force):
@@ -164,10 +173,17 @@ class Character(GameEntity):
     # Método que actualiza el estado y Sprite del Character
     def update(self, dt):
         self.calculate_gravity()
+        # print('platform',self.current_platform)
         if self.current_platform:
             if not self.current_platform.test(self):
-                self.jump = True
+                # self.jumping = False
                 self.current_platform = None
+        else:
+            self.rect.y = self.rect.y + self.dy
+            if self.rect.y+self.rect.height > self.display.get_height() - self.base:
+                self.rect.y = self.display.get_height()-self.rect.height - self.base
+                self.jumping = False
+                self.dy = 0
         # print(self.rect)
         # print(self.display.get_width())
         if self.pos_x + self.dx > 0 and self.pos_x + self.dx < 9900:
@@ -186,11 +202,6 @@ class Character(GameEntity):
         #     self.rect.x = self.rect.x + self.dx
 
 
-        self.rect.y = self.rect.y + self.dy
-        if self.rect.y+self.rect.height > self.display.get_height() - self.base:
-            self.rect.y = self.display.get_height()-self.rect.height - self.base
-            self.jumping = False
-            self.dy = 0
 
         self.current_state.update(dt)
         self.image = self.current_state.get_sprite()

@@ -12,9 +12,7 @@ from source.Service import *
 from source.Models import *
 from source.Page import *
 
-size = width, height = (960,600)
-screen = pygame.display.set_mode(size)
-pygame.init()
+
 
 # class Config:
 #     def __init__(self):
@@ -28,8 +26,12 @@ class CBManager:
         self.initial_page = None
         self.scenarios = []
         self.current_page = None
-        self.dt = pygame.time.Clock().tick(60)
+        self.dt = pygame.time.Clock().tick(120)
         self.pause = False
+
+        self.size = width, height = (960,600)
+        self.screen = pygame.display.set_mode(self.size)
+        pygame.init()
 
     def load_service(self):
         content = self.service.get_data()
@@ -38,17 +40,21 @@ class CBManager:
         for character in content['characters']:
             characters.append(CharacterDB(character))
 
-        self.initial_page = InitialPage(screen, characters, self)
+        self.initial_page = InitialPage(self.screen, characters, self)
 
         for scenario in content['scenarios']:
             scenario_s = ScenarioDB(scenario)
-            self.scenarios.append(ScenarioPage(screen, scenario_s, self))
+            self.scenarios.append(ScenarioPage(self.screen, scenario_s, self))
         self.managePages()
         self.current_page = self.initial_page
 
     def manage(self):
-        self.load_service()
-
+        try:
+            self.load_service()
+        except Exception as e:
+            print(e)
+            print("Debes levantar el servidor")
+            return
         while True:
 
             self.current_page.draw()

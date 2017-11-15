@@ -237,9 +237,9 @@ class Title(FormComponent):
         return hs[h]
 
     def draw(self):
-        self.hide = not self.hide
-        if self.hide:
-            return
+        # self.hide = not self.hide
+        # if self.hide:
+        #     return
         font = pygame.font.SysFont(None, self.h)
         title = font.render(self.value, True, self.color)
         self.form.screen.blit(title, (self.x, self.y))
