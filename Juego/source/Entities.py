@@ -56,9 +56,8 @@ class Character(GameEntity):
     # Constructor
     def __init__(self, display, character, number_of_sprites, px, py, scale = 1, mode = 0):
         super(Character, self).__init__(display)
-        self.speed = character.velocity * 7
-        print("velocidad", character.name,self.speed)
-        # self.speed = 80
+        # self.speed = character.velocity * 7
+        self.speed = 80
         self.character = character
         self.paths = (character.photo_normal, character.photo_super, character.photo_ultra)
         self.number_of_sprites = number_of_sprites
@@ -72,7 +71,7 @@ class Character(GameEntity):
         self.current_platform = None
         self.jumping = False
         self.base = 50
-        self.alt = 0.7
+        self.alt = 1
 
     # Permite dimensionar la imagen escalándola de tamaño
     def scale(self,scale):
@@ -125,11 +124,13 @@ class Character(GameEntity):
 
     # Play al personaje
     def play(self):
-        self.alt = 0.7
+        self.alt = 1
 
     # Método encargado del salto del personaje
     def jump(self, jump_force):
-        self.impulse(self.dx, -jump_force)
+        effect = pygame.mixer.Sound('mp3/jump.wav')
+        effect.play()
+        self.impulse(self.dx, - jump_force)
 
     # Método encargado de las interacciones del teclado con el personaje (KEY_DOWN)
     def key_down(self, key):
@@ -148,6 +149,11 @@ class Character(GameEntity):
         elif key == pygame.K_RCTRL or key == pygame.K_LCTRL:
             self.mode = int(self.mode == 0)
             self.load_image()
+            if(self.mode):
+                pygame.mixer.music.load('mp3/practicante.ogg')
+                pygame.mixer.music.play(-1)
+            else:
+                pygame.mixer.music.stop()
 
     # Método encargado de las interacciones del teclado con el personaje (KEY_UP)
     def key_up(self, key):
@@ -191,13 +197,13 @@ class Character(GameEntity):
 
         if self.pos_x > 9900 - 480 and self.rect.x + self.dx < 900:
             self.rect.x = self.rect.x + self.dx
-        elif self.pos_x < 470 and self.rect.x + self.dx < 470:
+        elif self.pos_x < 480 and self.rect.x + self.dx < 480:
             self.rect.x = self.rect.x + self.dx
 
         if self.rect.x <= 0:
             self.rect.x = 0
-        elif self.rect.x >= 900:
-            self.rect.x = 900
+        # elif self.rect.x >= 850:
+        #     self.rect.x = 850
         # elif self.rect.x + self.dx > 0 and self.rect.x + self.dx < 470:
         #     self.rect.x = self.rect.x + self.dx
 
@@ -219,7 +225,6 @@ class Boss(GameEntity):
         super(Boss, self).__init__(display)
         self.speed = 10
         self.boss = boss
-        print(boss.image)
         self.number_of_sprites = number_of_sprites
         self.load_image()
         self.image = self.current_state.get_sprite()
@@ -252,7 +257,6 @@ class Boss(GameEntity):
 
     # Método que actualiza el estado y Sprite del Character
     def update(self, dt):
-        print(self.pos_x + self.dx,self.pos_x,self.dx)
         self.rect.x = 100
 
         self.current_state.update(dt)

@@ -53,9 +53,10 @@ class InitialPage(Page):
         self.form = Form(self.screen)
 
         # Se crean título, fondo y labels
-        title = Title(321,140,'Seleccionar Personaje')
-        prettytitle = PrettyTitle(321,10,'Prueba',[' ','dos','tres'])
-        background = Image(0,0,path_fondo_u_lima)
+        title = Title(321,160,'Seleccionar Personaje',Color.YELLOW,'H1',2)
+        # prettytitle = PrettyTitle(321,10,'Prueba',[' ','dos','tres'])
+        background = Image(0,0,Config.PATH_FONDO_U_LIMA)
+        logo = ImageGIF(0,0,Config.PATH_LOGO_CACHIMBO_BROS)
 
         label1 = Label(500,250,'Elije a tu personaje favorito')
         label2 = Label(500,350,'Nombre')
@@ -78,6 +79,7 @@ class InitialPage(Page):
         # Se agregan los componentes al formulario
         # OJO: Primero siempre va el background, sino tapará a los demás components
         self.form.add_child(background)
+        self.form.add_child(logo)
         self.form.add_child(title)
 
         # self.form.add_child(prettytitle)
@@ -90,8 +92,7 @@ class InitialPage(Page):
 
     def draw(self):
         self.form.draw()
-        width = self.screen.get_rect().width
-        pygame.draw.rect(self.screen, Color.YELLOW,(0,130,width,75),2)
+        # width = self.screen.get_rect().width
         [character.update(self.manager.dt) for character in self.characters]
 
         # self.cachimbo.update(self.manager.dt)
@@ -108,7 +109,7 @@ class InitialPage(Page):
             return
         if event.type == KEYDOWN:
             if event.key == pygame.K_RETURN:
-                self.create_characeter()
+                self.go_to_next_page()
                 return
             [character.key_update(event) for character in self.characters]
             # self.cachimbo.key_down(event.key)
@@ -124,9 +125,9 @@ class InitialPage(Page):
             self.button_cachimbo.collidepoint(mouse_position)
             self.button_cachimba.collidepoint(mouse_position)
             if self.button_jugar.rect.collidepoint(mouse_position):
-                self.create_characeter()
+                self.go_to_next_page()
 
-    def create_characeter(self):
+    def go_to_next_page(self):
         if self.edit_text.is_empty():
             self.edit_text.empty_alert()
             return
@@ -138,7 +139,7 @@ class InitialPage(Page):
             'character': character
         }
         self.manager.player = PlayerDB(player)
-        self.manager.nextPage()
+        self.manager.go_to_next_page()
         # self.manager.current_page = self.manager.scenario1
         # self.manager.current_page.manage()
 
@@ -146,13 +147,13 @@ class ScenarioPage(Page):
 
     DIFICULTY = {
         'EASY': {
-            'cant_obstacles': 10
-        },
-        'MEDIUM': {
             'cant_obstacles': 15
         },
-        'HARD': {
+        'MEDIUM': {
             'cant_obstacles': 20
+        },
+        'HARD': {
+            'cant_obstacles': 25
         }
     }
 
@@ -171,9 +172,13 @@ class ScenarioPage(Page):
         }
     }
 
-    def __init__(self, screen, scenario, manager):
+    YEARS = ['2017-1','2017-2','2018-1','2018-2','2019-1']
+    MUSIC = ['music.mp3','music.mp3','music.mp3','music.mp3','final_boss.mp3']
+
+    def __init__(self, screen, scenario, manager, index = 0):
         self.screen = screen
         self.scenario = scenario
+        self.index = index
         # print(self.scenario.teacher.name)
         # print(self.scenario.teacher.course)
         # print(self.scenario.teacher.image)
@@ -185,6 +190,8 @@ class ScenarioPage(Page):
         self.platforms = Platforms(manager)
         self.generate_obstacles()
         self.generate_platforms()
+        # Play a la música
+
 
     def manage(self):
         # Objetos en pantalla
@@ -193,11 +200,18 @@ class ScenarioPage(Page):
         self.boss = Boss(self.screen,self.scenario.teacher,3,400,470,1.2)
         self.form = Form(self.screen)
         self.name = Title(10,10,self.manager.player.name,Color.BLACK,'H3')
-        self.year = Title(430,10,self.manager.player.entrant,Color.BLACK,'H3')
+        self.year = Title(440,10,self.YEARS[self.index],Color.BLACK,'H3')
         self.form.add_child(self.name)
         self.form.add_child(self.year)
 
+        print('MUSICAA')
+        print('mp3/' + self.MUSIC[self.index])
+        pygame.mixer.music.load('mp3/' + self.MUSIC[self.index])
+        pygame.mixer.music.play(-1)
+
     def draw(self):
+        if self.character.pos_x >= 9890:
+            self.go_to_next_page()
         # print(pygame.time.get_ticks())
         calc = self.character.pos_x - self.screen.get_rect().width / 2
         if calc <= 0:
@@ -214,15 +228,15 @@ class ScenarioPage(Page):
         self.form.draw()
         font = pygame.font.SysFont(None, 60)
         title = font.render(str(self.manager.player.score), True, Color.BLACK)
-        self.screen.blit(title, (900,10))
+        self.screen.blit(title, (880,10))
         # self.platforms.draw()
 
-        if self.manager.pause:
-            s = pygame.Surface((1000, 1000))
-            s.fill(Color.BLACK)
-            s.set_colorkey(Color.BLACK)
-            pygame.draw.rect(s, Color.BLACK,(0,0,self.manager.size[0],self.manager.size[1]), 0)
-            s.set_alpha(75)
+        # if self.manager.pause:
+        #     s = pygame.Surface((1000, 1000))
+        #     s.fill(Color.BLACK)
+        #     s.set_colorkey(Color.BLACK)
+        #     pygame.draw.rect(s, Color.BLACK,(0,0,self.manager.size[0],self.manager.size[1]), 0)
+        #     s.set_alpha(75)
         # self.boss.update(self.manager.dt)
         # self.boss.draw()
 
@@ -233,7 +247,7 @@ class ScenarioPage(Page):
             # pygame.draw.line(display, Color.WHITE, (p.x1 -self.character.pos_x , p.y), (p.x2 -self.character.pos_x, p.y),1)
 
         for obstacle in self.obstacles:
-            self.screen.blit(obstacle['image'], (obstacle['pos'] -self.character.pos_x,500))
+            self.screen.blit(obstacle['image'], (obstacle['pos_x'] -self.character.pos_x,obstacle['pos_y']))
 
     def key_update(self, event):
         if event.type == KEYDOWN and event.key == pygame.K_p and not self.manager.current_page == self.manager.initial_page:
@@ -250,26 +264,30 @@ class ScenarioPage(Page):
 
     def generate_obstacles(self):
         # self.obstacles_group = pygame.sprite.Group()
-        pos_temp = 1500
+        pos_x = 1500
         path_obstacles = Config.PATH_OBSTACLES
-        obstacles_name = ['book.png','phone.png','water.png']
+        obstacles_name = ['book.png','phone.png','water.png','contract.png']
+        max_limit = 3
         max = self.DIFICULTY[self.scenario.dificulty]['cant_obstacles']
         for x in range(0,max):
-            name = obstacles_name[random.randint(0,2)]
-            pos_temp = pos_temp + random.randint(100,400)
-            print(pos_temp)
-            obstacle_image = pygame.transform.scale(pygame.image.load(path_obstacles + name),(50,50))
+            rand = random.randint(0,max_limit)
+            if(rand == 3):
+                max_limit = 2
+            name = obstacles_name[rand]
+            pos_x = pos_x + random.randint(500,550)
+            pos_y = random.randint(400, 500)
+            obstacle_image = pygame.transform.scale(pygame.image.load(path_obstacles + name).convert_alpha(),(50,50))
             self.obstacles.append({
                 'image': obstacle_image,
-                'pos': pos_temp,
+                'pos_x': pos_x,
+                'pos_y': pos_y,
                 'name': name
             })
             # self.obstacles_group.add(obstacle_image)
 
     def collide_obstacles(self):
         for index, obstacle in enumerate(self.obstacles):
-            if(self.character.rect.y == 440 and self.character.pos_x  + 500 >= obstacle['pos'] and self.character.pos_x + 500 <= obstacle['pos'] + 50):
-                print(self.manager.player.score)
+            if(self.character.rect.y <= obstacle['pos_y'] and self.character.rect.y >= obstacle['pos_y'] - 110 and self.character.pos_x  + 500 >= obstacle['pos_x'] and self.character.pos_x + 500 <= obstacle['pos_x'] + 110):
                 self.manager.player.score = self.manager.player.score + self.SCORE[obstacle['name']]['score']
                 self.obstacles.pop(index)
 
@@ -281,10 +299,12 @@ class ScenarioPage(Page):
                 # print(obstacle['name'])
 
     def generate_platforms(self):
-        self.image = pygame.image.load(Config.PATH_OBSTACLES + "obstacle.png")
-        for i in range(0, 10):
+        self.image = pygame.image.load(Config.PATH_OBSTACLES + "obstacle.png").convert_alpha()
+        for i in range(0, 20):
             self.platforms.add(Platform(1500 + i*400, random.randint(300,500), 200))
 
+    def go_to_next_page(self):
+        self.manager.go_to_next_page()
 
 class Platform:
     def __init__(self,x,y,width):

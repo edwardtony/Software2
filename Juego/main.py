@@ -28,7 +28,7 @@ class CBManager:
         self.current_page = None
         self.dt = pygame.time.Clock().tick(120)
         self.pause = False
-
+        self.transition = False
         self.size = width, height = (960,600)
         self.screen = pygame.display.set_mode(self.size)
         pygame.init()
@@ -42,21 +42,15 @@ class CBManager:
 
         self.initial_page = InitialPage(self.screen, characters, self)
 
-        for scenario in content['scenarios']:
+        for index, scenario in enumerate(content['scenarios']):
             scenario_s = ScenarioDB(scenario)
-            self.scenarios.append(ScenarioPage(self.screen, scenario_s, self))
+            self.scenarios.append(ScenarioPage(self.screen, scenario_s, self, index))
         self.managePages()
         self.current_page = self.initial_page
 
     def manage(self):
-        try:
-            self.load_service()
-        except Exception as e:
-            print(e)
-            print("Debes levantar el servidor")
-            return
+        self.load_service()
         while True:
-
             self.current_page.draw()
 
             for event in pygame.event.get():
@@ -67,6 +61,12 @@ class CBManager:
                 else:
                     self.current_page.key_update(event)
             pygame.display.flip()
+            # print(self.transition)
+            # if self.transition:
+            #     pygame.time.wait(1000)
+            #     self.transition = False
+
+
 
     def managePages(self):
         self.initial_page.set_next_page(self.scenarios[0])
@@ -74,9 +74,11 @@ class CBManager:
             if not index + 1 == len(self.scenarios):
                 self.scenarios[index].set_next_page(self.scenarios[index + 1])
 
-    def nextPage(self):
-        self.current_page.next_page.manage()
+    def go_to_next_page(self):
+        # self.transition = True
+        pygame.draw.rect(self.screen, Color.BLACK,(0,0,self.size[0],self.size[1]), 0)
         self.current_page = self.current_page.next_page
+        self.current_page.manage()
 
 # Método principal que ejecuta todo el Hilo
 def main():

@@ -5,7 +5,7 @@
 import pygame
 from pygame.locals import *
 from source.Utils import *
-
+from source.States import *
 
 """
     Version: 0.8
@@ -215,13 +215,14 @@ class Button(FormComponent):
 
 class Title(FormComponent):
     # Constructor
-    def __init__(self, x=0, y=0, value='', color=Color.YELLOW, h='H1'):
+    def __init__(self, x=0, y=0, value='', color=Color.YELLOW, h='H1', border = 0):
         self.x = x
         self.y = y
         self.h = self.get_h(h)
         self.value = value
         self.color = color
         self.hide = False
+        self.border = border
 
     def get_h(self,h):
         hs = {
@@ -242,6 +243,8 @@ class Title(FormComponent):
         #     return
         font = pygame.font.SysFont(None, self.h)
         title = font.render(self.value, True, self.color)
+        if not self.border == 0:
+            pygame.draw.rect(self.form.screen, Color.YELLOW,(0,self.y - 10,self.form.screen.get_rect().width,75),2)
         self.form.screen.blit(title, (self.x, self.y))
 
 # Título que parpadea
@@ -307,3 +310,21 @@ class Image(FormComponent):
         image = pygame.image.load(self.path)
         rect = image.get_rect()
         self.form.screen.blit(image, rect)
+
+class ImageGIF(FormComponent):
+
+    # Constructor
+    def __init__(self, x=0, y=0, path=''):
+        self.x = x
+        self.y = y
+        self.path = path
+        self.load_image()
+
+    def load_image(self):
+        self.images = pygame.image.load(self.path)
+        self.image_gif = AnimatedState(self.images, 2, 150, "logo")
+
+    def draw(self):
+        self.image_gif.update(20)
+        rect = self.image_gif.get_sprite().get_rect()
+        self.form.screen.blit(self.image_gif.get_sprite(), rect)
