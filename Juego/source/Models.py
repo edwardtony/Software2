@@ -58,6 +58,8 @@ class TeacherDB():
         self.name = object['name']
         self.course = object['course']
         self.image = object['image']
+        self.questions = object['question']
+        print(object['question'][0]['description'])
 
 class ScenarioDB():
     def __init__(self,object):

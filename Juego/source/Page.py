@@ -179,7 +179,7 @@ class ScenarioPage(Page):
         self.screen = screen
         self.scenario = scenario
         self.index = index
-        # print(self.scenario.teacher.name)
+        print(self.scenario.teacher.name)
         # print(self.scenario.teacher.course)
         # print(self.scenario.teacher.image)
         self.manager = manager
@@ -197,7 +197,7 @@ class ScenarioPage(Page):
         # Objetos en pantalla
         # Corregir el nombre de la imagen, no en duro
         self.character = Character(self.screen,self.manager.player.character.character,3,50,470)
-        self.boss = Boss(self.screen,self.scenario.teacher,3,400,470,1.2)
+        self.boss = Boss(self.screen,self.scenario.teacher,3,400,420,1.2)
         self.form = Form(self.screen)
         self.name = Title(10,10,self.manager.player.name,Color.BLACK,'H3')
         self.year = Title(440,10,self.YEARS[self.index],Color.BLACK,'H3')
@@ -206,8 +206,8 @@ class ScenarioPage(Page):
 
         print('MUSICAA')
         print('mp3/' + self.MUSIC[self.index])
-        pygame.mixer.music.load('mp3/' + self.MUSIC[self.index])
-        pygame.mixer.music.play(-1)
+        # pygame.mixer.music.load('mp3/' + self.MUSIC[self.index])
+        # pygame.mixer.music.play(-1)
 
     def draw(self):
         if self.character.pos_x >= 9890:
@@ -221,7 +221,7 @@ class ScenarioPage(Page):
 
         # screen_pos =  calc if self.character.pos_x  > calc else self.character.pos_x
         self.screen.blit(self.background, (-calc, -120))
-        self.character.update(self.manager.dt)
+        self.character.update(self.boss)
         self.platforms.do(self.character)
         self.collide_obstacles()
         self.character.draw()
@@ -237,13 +237,13 @@ class ScenarioPage(Page):
         #     s.set_colorkey(Color.BLACK)
         #     pygame.draw.rect(s, Color.BLACK,(0,0,self.manager.size[0],self.manager.size[1]), 0)
         #     s.set_alpha(75)
-        # self.boss.update(self.manager.dt)
-        # self.boss.draw()
+        self.boss.update(self.character)
+        self.boss.draw()
 
         # DRAW METHOD
         display = self.manager.screen
         for p in self.platforms.container:
-            self.manager.screen.blit(self.image, (p.x1 -self.character.pos_x ,p.y))
+            self.manager.screen.blit(self.image, (p.x1 - self.character.pos_x ,p.y))
             # pygame.draw.line(display, Color.WHITE, (p.x1 -self.character.pos_x , p.y), (p.x2 -self.character.pos_x, p.y),1)
 
         for obstacle in self.obstacles:
@@ -288,7 +288,7 @@ class ScenarioPage(Page):
     def collide_obstacles(self):
         for index, obstacle in enumerate(self.obstacles):
             if(self.character.rect.y <= obstacle['pos_y'] and self.character.rect.y >= obstacle['pos_y'] - 110 and self.character.pos_x  + 500 >= obstacle['pos_x'] and self.character.pos_x + 500 <= obstacle['pos_x'] + 110):
-                self.manager.player.score = self.manager.player.score + self.SCORE[obstacle['name']]['score']
+                self.updateScore(self.SCORE[obstacle['name']]['score'])
                 self.obstacles.pop(index)
 
             # print(self.character.pos_x)
@@ -297,6 +297,13 @@ class ScenarioPage(Page):
             # print(pygame.sprite.spritecollide(self.image.get_rect(), obstacle['image'].get_rect(), True))
             # if(self.image.get_rect().colliderect(obstacle['image'].get_rect())):
                 # print(obstacle['name'])
+
+    def updateScore(self, score):
+        new_score = self.manager.player.score + score
+        if new_score >= 0:
+            self.manager.player.score = new_score
+        else:
+            self.manager.player.score = 0
 
     def generate_platforms(self):
         self.image = pygame.image.load(Config.PATH_OBSTACLES + "obstacle.png").convert_alpha()

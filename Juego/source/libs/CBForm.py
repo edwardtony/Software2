@@ -248,8 +248,81 @@ class Title(FormComponent):
         self.form.screen.blit(title, (self.x, self.y))
 
 # Título que parpadea
-class FlashTitle():
-    pass
+
+class DialogManager():
+
+    """
+        Clase gestora del comportamiento de los dialogs
+    """
+
+    # Constructor
+    def __init__(self):
+        self.dialogs = []
+        self.current_dialog = None
+        self.previous_dialogs = []
+        self.index = 0
+
+    def draw(self):
+        [ dialog.draw() for dialog in self.previous_dialogs]
+        self.current_dialog.draw()
+        # for dialog in self.dialogs:
+        #     dialog.draw()
+
+    def next_dialog(self):
+        self.current_dialog.previous = True
+        self.previous_dialogs.append(self.current_dialog)
+        if self.index + 1 < len(self.dialogs):
+            self.index = self.index + 1
+            self.current_dialog = self.dialogs[self.index]
+
+    # Elige el botón clickeado y deselecciona los otros botones
+    def update(self, clicked_button):
+        for button in self.buttons:
+            if button == clicked_button:
+                button.focus = True
+            else:
+                button.focus = False
+
+    # Agrega botones al Radio Group
+    def add_dialog(self, dialog):
+        if len(self.dialogs) == 0:
+            self.current_dialog = dialog
+        dialog.manager = self
+        self.dialogs.append(dialog)
+
+    # Obtiene los botones del Radio Group
+    def get_dialogs(self):
+        return self.dialogs
+
+
+class Dialog():
+
+    def __init__(self, x=0, y=0, value='', color=Color.BLACK):
+        self.x = x
+        self.y = y
+        self.h = 30
+        self.value = value
+        self.temp = ""
+        self.index = 0
+        self.color = color
+        self.effect = None
+        self.previous = False
+
+    def draw(self):
+        if self.index <= len(self.value):
+            self.temp = self.value[0:self.index]
+            self.index = self.index + 1
+            if self.effect == None:
+                self.effect = pygame.mixer.Sound('mp3/dialog.wav')
+                self.effect.play()
+        elif self.previous == False:
+            self.effect.stop()
+            self.manager.next_dialog()
+            pygame.time.delay(500)
+
+        font = pygame.font.SysFont(None, self.h)
+        title = font.render(self.temp, True, self.color)
+        self.manager.form.screen.blit(title, (self.x, self.y))
 
 class PrettyTitle():
     # Constructor

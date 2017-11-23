@@ -3,7 +3,7 @@
 import pygame
 from States import AnimatedState, StaticState
 from pygame.locals import *
-
+from libs.CBForm import *
 """
     Este es el archivo que se encargará de trabajar todas entidades del juego
 """
@@ -177,7 +177,11 @@ class Character(GameEntity):
             self.key_up(event.key)
 
     # Método que actualiza el estado y Sprite del Character
-    def update(self, dt):
+    def update(self, boss):
+        if self.pos_x > 9330 and boss.status == Boss.STATUS_INITIAL:
+            self.dx = 0
+            boss.in_class = True
+            return
         self.calculate_gravity()
         # print('platform',self.current_platform)
         if self.current_platform:
@@ -209,7 +213,7 @@ class Character(GameEntity):
 
 
 
-        self.current_state.update(dt)
+        self.current_state.update(1)
         self.image = self.current_state.get_sprite()
 
 
@@ -219,6 +223,9 @@ class Boss(GameEntity):
         Clase encargada de gestionar la configuración y acciones de un boss,
         Extiende de GameEntity
     """
+
+    STATUS_INITIAL = "INITIAL"
+    STATUS_DEFEATED = "DEFEATED"
 
     # Constructor
     def __init__(self, display, boss, number_of_sprites, px, py, scale = 1):
@@ -231,6 +238,10 @@ class Boss(GameEntity):
         self.rect = self.scale(scale)
         self.rect.x = px
         self.rect.y = py
+        self.rect.x = 5500
+        self.status = Boss.STATUS_INITIAL
+        self.in_class = False
+        self.message = Message(self.display, "HOLA")
 
     # Permite dimensionar la imagen escalándola de tamaño
     def scale(self,scale):
@@ -256,8 +267,48 @@ class Boss(GameEntity):
         self.set_current_state("resting_left")
 
     # Método que actualiza el estado y Sprite del Character
-    def update(self, dt):
-        self.rect.x = 100
-
-        self.current_state.update(dt)
+    def update(self, character):
+        if self.in_class:
+            self.show_message()
+            return
         self.image = self.current_state.get_sprite()
+        self.rect.x = self.rect.x - character.dx / 2
+
+    def show_message(self):
+        self.message.update()
+
+    # def update(self, dt):
+    #     if self.pos_x + self.dx > 0 and self.pos_x + self.dx < 9900:
+    #         self.pos_x = self.pos_x + self.dx
+    #
+    #     if self.pos_x > 9900 - 480 and self.rect.x + self.dx < 900:
+    #         self.rect.x = self.rect.x + self.dx
+    #     elif self.pos_x < 480 and self.rect.x + self.dx < 480:
+    #         self.rect.x = self.rect.x + self.dx
+    #
+    #     if self.rect.x <= 0:
+    #         self.rect.x = 0
+    #     # elif self.rect.x >= 850:
+    #     #     self.rect.x = 850
+    #     # elif self.rect.x + self.dx > 0 and self.rect.x + self.dx < 470:
+    #     #     self.rect.x = self.rect.x + self.dx
+
+class Message(GameEntity):
+
+    def __init__(self,display, message):
+        super(Message, self).__init__(display)
+        self.path = "assets/img/objects/globo_dialogo.png"
+        self.image = pygame.image.load(self.path)
+        self.form = Form(display)
+        self.dialog_manager = DialogManager()
+        self.dialog_manager.add_dialog(Dialog(200,100,'Hola, soy el profesor Riccio y hoy conoceras el poder de las BDs '))
+        self.dialog_manager.add_dialog(Dialog(200,140,'Me conocen como el padre de Oracle!!! '))
+        self.dialog_manager.add_dialog(Dialog(200,180,'Pregunta1: Que es una base de datos? '))
+        self.dialog_manager.add_dialog(Dialog(200,220,'    a) cualquier cosa '))
+        self.dialog_manager.add_dialog(Dialog(200,260,'    b) cualquier cosa '))
+        self.dialog_manager.add_dialog(Dialog(200,300,'    c) cualquier cosa '))
+        self.dialog_manager.add_dialog(Dialog(200,340,'(Presionar la tecla que corresponda a tu respuesta) '))
+        self.form.add_child(self.dialog_manager)
+    def update(self):
+        self.display.blit(self.image, (150,50))
+        self.form.draw()
