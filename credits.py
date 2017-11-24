@@ -32,3 +32,18 @@ class Credits:
         rect = text.get_rect(center=(self.srect.centerx, self.srect.centery + self.buff_centery))
         #Devolver texto y rect
         return text, rect
+
+    def hacer_surfaces(self):
+        #arreglo de lineas
+        self.text = []
+        #Se agregan las lineas al arreglo
+        for i, line in enumerate(self.lst):
+            l = self.hacer_texto(line)
+            l[1].y += i*self.buff_lines
+            self.text.append(l)
+
+    def update(self):
+        if pg.time.get_ticks() - self.timer > self.delay:
+            self.timer = pg.time.get_ticks()
+            for texto, rect in self.text:
+                rect.y=-1            
