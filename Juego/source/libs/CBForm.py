@@ -261,9 +261,10 @@ class DialogManager():
         self.current_dialog = None
         self.previous_dialogs = []
         self.index = 0
+        self.play = True
 
     def draw(self):
-        [ dialog.draw() for dialog in self.previous_dialogs]
+        [dialog.draw() for dialog in self.previous_dialogs]
         self.current_dialog.draw()
         # for dialog in self.dialogs:
         #     dialog.draw()
@@ -272,8 +273,19 @@ class DialogManager():
         self.current_dialog.previous = True
         self.previous_dialogs.append(self.current_dialog)
         if self.index + 1 < len(self.dialogs):
+            if self.dialogs[self.index + 1].type == Dialog.TYPE_QUESTION:
+                pygame.time.delay(1000)
+            elif self.dialogs[self.index + 1].type == Dialog.TYPE_LAST_ALTERNATIVE:
+                self.play = False
+
+            if self.dialogs[self.index].type == Dialog.TYPE_LAST_ALTERNATIVE and not self.play:
+                return
+            print('ENTREEE')
             self.index = self.index + 1
             self.current_dialog = self.dialogs[self.index]
+
+    def change_to_play(self):
+        self.play = True
 
     # Elige el botón clickeado y deselecciona los otros botones
     def update(self, clicked_button):
@@ -297,7 +309,11 @@ class DialogManager():
 
 class Dialog():
 
-    def __init__(self, x=0, y=0, value='', color=Color.BLACK):
+    TYPE_LABEL = 'LABEL'
+    TYPE_QUESTION = 'QUESTION'
+    TYPE_LAST_ALTERNATIVE = 'LAST_ALTERNATIVE'
+
+    def __init__(self, x=0, y=0, value='', type = TYPE_LABEL, color=Color.BLACK):
         self.x = x
         self.y = y
         self.h = 30
@@ -307,8 +323,10 @@ class Dialog():
         self.color = color
         self.effect = None
         self.previous = False
+        self.type = type
 
     def draw(self):
+        print(self.temp)
         if self.index <= len(self.value):
             self.temp = self.value[0:self.index]
             self.index = self.index + 1

@@ -4,6 +4,7 @@ import pygame
 from States import AnimatedState, StaticState
 from pygame.locals import *
 from libs.CBForm import *
+from Config import *
 """
     Este es el archivo que se encargará de trabajar todas entidades del juego
 """
@@ -57,7 +58,8 @@ class Character(GameEntity):
     def __init__(self, display, character, number_of_sprites, px, py, scale = 1, mode = 0):
         super(Character, self).__init__(display)
         # self.speed = character.velocity * 7
-        self.speed = 80
+        self.speed = 100
+        self.life = 3
         self.character = character
         self.paths = (character.photo_normal, character.photo_super, character.photo_ultra)
         self.number_of_sprites = number_of_sprites
@@ -241,7 +243,7 @@ class Boss(GameEntity):
         self.rect.x = 5500
         self.status = Boss.STATUS_INITIAL
         self.in_class = False
-        self.message = Message(self.display, "HOLA")
+        self.message = Message(self.display, "HOLA", self)
 
     # Permite dimensionar la imagen escalándola de tamaño
     def scale(self,scale):
@@ -293,22 +295,44 @@ class Boss(GameEntity):
     #     # elif self.rect.x + self.dx > 0 and self.rect.x + self.dx < 470:
     #     #     self.rect.x = self.rect.x + self.dx
 
+    # Método encargado de las interacciones del teclado con el personaje (KEY_DOWN)
+    def key_down(self, key):
+        if key == K_a:
+            print('A')
+            self.message.dialog_manager_title.change_to_play()
+        elif key == K_b:
+            self.message.dialog_manager_title.change_to_play()
+            print('B')
+        elif key == K_c:
+            self.message.dialog_manager_title.change_to_play()
+            print('C')
+
+
+
 class Message(GameEntity):
 
-    def __init__(self,display, message):
+    def __init__(self,display, message, teacher):
         super(Message, self).__init__(display)
-        self.path = "assets/img/objects/globo_dialogo.png"
+        self.path = Config.PATH_OBJECTS + "globo_dialogo.png"
         self.image = pygame.image.load(self.path)
         self.form = Form(display)
-        self.dialog_manager = DialogManager()
-        self.dialog_manager.add_dialog(Dialog(200,100,'Hola, soy el profesor Riccio y hoy conoceras el poder de las BDs '))
-        self.dialog_manager.add_dialog(Dialog(200,140,'Me conocen como el padre de Oracle!!! '))
-        self.dialog_manager.add_dialog(Dialog(200,180,'Pregunta1: Que es una base de datos? '))
-        self.dialog_manager.add_dialog(Dialog(200,220,'    a) cualquier cosa '))
-        self.dialog_manager.add_dialog(Dialog(200,260,'    b) cualquier cosa '))
-        self.dialog_manager.add_dialog(Dialog(200,300,'    c) cualquier cosa '))
-        self.dialog_manager.add_dialog(Dialog(200,340,'(Presionar la tecla que corresponda a tu respuesta) '))
-        self.form.add_child(self.dialog_manager)
+        self.teacher = teacher
+        self.dialog_manager_title = DialogManager()
+        self.generate_dialogs()
+
+
     def update(self):
         self.display.blit(self.image, (150,50))
         self.form.draw()
+
+    def generate_dialogs(self):
+        self.dialog_manager_title.add_dialog(Dialog(200, 110, self.teacher.boss.presentation + " "))
+        self.dialog_manager_title.add_dialog(Dialog(200, 140, self.teacher.boss.description + " "))
+        self.dialog_manager_title.add_dialog(Dialog(200, 180, '(Presionar la tecla que corresponda a tu respuesta) '))
+        for index, question in enumerate(self.teacher.boss.questions):
+            self.dialog_manager_title.add_dialog(Dialog(200, 230, 'Pregunta ' + str(index + 1) + ": " + question['description'] + " ",Dialog.TYPE_QUESTION))
+            self.dialog_manager_title.add_dialog(Dialog(200, 280, "    a)" + question['alternative'][0]['description'] + " "))
+            self.dialog_manager_title.add_dialog(Dialog(200, 310, "    b)" + question['alternative'][1]['description'] + " "))
+            self.dialog_manager_title.add_dialog(Dialog(200, 340, "    c)" + question['alternative'][2]['description'] + " ", Dialog.TYPE_LAST_ALTERNATIVE))
+        # dialog_manager.add_dialog(self.dialog_manager_question)
+        self.form.add_child(self.dialog_manager_title)

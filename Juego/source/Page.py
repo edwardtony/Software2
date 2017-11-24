@@ -199,7 +199,7 @@ class ScenarioPage(Page):
         self.character = Character(self.screen,self.manager.player.character.character,3,50,470)
         self.boss = Boss(self.screen,self.scenario.teacher,3,400,420,1.2)
         self.form = Form(self.screen)
-        self.name = Title(10,10,self.manager.player.name,Color.BLACK,'H3')
+        self.name = Title(10,10,self.manager.player.name,Color.BLACK,'H5')
         self.year = Title(440,10,self.YEARS[self.index],Color.BLACK,'H3')
         self.form.add_child(self.name)
         self.form.add_child(self.year)
@@ -239,6 +239,7 @@ class ScenarioPage(Page):
         #     s.set_alpha(75)
         self.boss.update(self.character)
         self.boss.draw()
+        self.draw_hearts()
 
         # DRAW METHOD
         display = self.manager.screen
@@ -259,8 +260,13 @@ class ScenarioPage(Page):
             self.character.play()
         if event.type == KEYDOWN:
             self.character.key_down(event.key)
+            self.boss.key_down(event.key)
         elif event.type == KEYUP:
             self.character.key_up(event.key)
+
+    def draw_hearts(self):
+        for i in range(0,self.character.life):
+            self.screen.blit(pygame.image.load(Config.PATH_OBJECTS + "hearts.png").convert_alpha(), (10 + i*50,40))
 
     def generate_obstacles(self):
         # self.obstacles_group = pygame.sprite.Group()

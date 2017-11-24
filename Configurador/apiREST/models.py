@@ -10,13 +10,17 @@ class Teacher(models.Model):
     name = models.CharField(max_length=50)
     course = models.CharField(max_length=30)
     image = models.CharField(max_length=200)
+    presentation = models.CharField(max_length=70)
+    description = models.CharField(max_length=50)
 
     def as_dict(self):
         result = dict(
             name = self.name,
             course = self.course,
             question = [question.as_dict() for question in self.question_set.all()],
-            image = self.image
+            image = self.image,
+            presentation = self.presentation,
+            description = self.description
         )
         return result
 
