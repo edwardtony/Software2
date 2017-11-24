@@ -21,7 +21,7 @@ class Credits:
         self.buff_lines = 50
         self.timer = 0.0
         self.delay = 1
-        self.make_surfaces()
+        self.hacer_surfaces()
 
     def hacer_texto(self, msj):
         #Creas la fuente
@@ -45,5 +45,17 @@ class Credits:
     def update(self):
         if pg.time.get_ticks() - self.timer > self.delay:
             self.timer = pg.time.get_ticks()
+            #Se va moviendo hacia abajo
             for texto, rect in self.text:
-                rect.y=-1            
+                rect.y -= 1
+
+    def materializar(self, surfa):
+        for text, rect in self.text:
+            surfa.blit(text, rect)
+
+pantalla = pg.display.set_mode((800,600))
+rect_pantalla = pantalla.get_rect()
+clock = pg.time.Clock()
+hecho = False
+
+credi = Credits(rect_pantalla, texto_lista)
