@@ -50,7 +50,7 @@ class Credits:
         self.buff_centery = self.srect.height/2 + 5
         self.buff_lines = 35
         self.timer = 0.0
-        self.delay = 1
+        self.delay = 0
         self.hacer_surfaces()
 
     def hacer_texto(self, msj):
@@ -98,4 +98,4 @@ while not salir:
     credi.update()
     credi.materializar(pantalla)
     pg.display.update()
-    clock.tick(60)
+    clock.tick(80)
