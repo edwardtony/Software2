@@ -87,6 +87,8 @@ pantalla = pg.display.set_mode((800,600))
 rect_pantalla = pantalla.get_rect()
 clock = pg.time.Clock()
 salir = False
+cumbion_argentino = pg.mixer.Sound("sounds/lavandeira.wav")
+pg.mixer.Sound.play(cumbion_argentino)
 
 credi = Credits(rect_pantalla, texto_lista)
 
@@ -98,4 +100,4 @@ while not salir:
     credi.update()
     credi.materializar(pantalla)
     pg.display.update()
-    clock.tick(80)
+    clock.tick(70)
