@@ -116,6 +116,8 @@ class Menu:
 
 def comenzar_nuevo_juego():
     print (' Despues de cargar aparece la seleccion de personajes.')
+    
+        
 
 def mostrar_opciones():
     print (" Función que muestra otro menú de opciones.")
@@ -132,6 +134,7 @@ def salir_del_programa():
 if __name__ == '__main__':
     
     salir = False
+    size = width, height = 960,600
     opciones = [
         ("Jugar", comenzar_nuevo_juego),
         ("Opciones", mostrar_opciones),
@@ -140,10 +143,15 @@ if __name__ == '__main__':
         ]
 
     pygame.font.init()
-    screen = pygame.display.set_mode((320, 240))
+    screen = pygame.display.set_mode(size)
     fondo = pygame.image.load("ciudad.jpg").convert()
+    fondo = pygame.transform.scale(fondo,(size))
+    cachimbo = pygame.image.load("logo.png").convert()
+    cachimbo = pygame.transform.scale(cachimbo,(300,100))
+    
+    
     menu = Menu(opciones)
-
+    
     while not salir:
 
         for e in pygame.event.get():
@@ -151,6 +159,7 @@ if __name__ == '__main__':
                 salir = True
 
         screen.blit(fondo, (0, 0))
+        screen.blit(cachimbo,(400,100))
         menu.actualizar()
         menu.imprimir(screen)
 

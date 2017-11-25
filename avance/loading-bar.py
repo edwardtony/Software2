@@ -8,8 +8,8 @@ green = [0, 255, 0]
 
 smallfont = pygame.font.SysFont("comicsansms", 25)
 
-display_width = 1050
-display_height = 500
+display_width = 960
+display_height = 600
 
 size=[display_width, display_height]
 screen = pygame.display.set_mode(size)
@@ -17,6 +17,7 @@ screen = pygame.display.set_mode(size)
 clock=pygame.time.Clock()
 
 progress = 0
+
 
 def text_onbjects(text, color, size):
     if size == "small":
@@ -26,12 +27,15 @@ def text_onbjects(text, color, size):
 
 
 def loading(progress):
+    cachimbo = pygame.image.load("logo2.png").convert()
+    cachimbo = pygame.transform.scale(cachimbo,(300,200))
+    screen.blit(cachimbo,(350,50))
     if progress < 100:
         text = smallfont.render("Loading: " + str(int(progress)) +"%", True, green)
     else:
         text = smallfont.render("Loading: " + str(100) + "%", True, green)
 
-    screen.blit(text, [453, 273])
+    screen.blit(text, [413, 333])
 
 def message_to_screen(msg, color, y_displace=0, size="small"):
     textSurf, textRect = text_objects(msg, color, size)
@@ -44,14 +48,14 @@ while (progress/2) < 100:
     increase = random.randint(1,1)
     progress += increase
     screen.fill(black)
-    pygame.draw.rect(screen, green, [423, 223, 204, 49])
-    pygame.draw.rect(screen, black, [424, 224, 202, 47])
+    pygame.draw.rect(screen, green, [393, 283, 204, 49])
+    pygame.draw.rect(screen, black, [394, 284, 202, 47])
 
     
     if(progress/2 > 100):
-       pygame.draw.rect(screen, green, [425, 225, 200, 45])
+       pygame.draw.rect(screen, green, [395, 285, 200, 45])
     else:
-       pygame.draw.rect(screen, green, [425, 225, progress, 45])
+       pygame.draw.rect(screen, green, [395, 285, progress, 45])
     loading(progress/2)
     pygame.display.flip()
 
