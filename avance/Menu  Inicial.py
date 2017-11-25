@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-#
-# autor: Hugo Ruscitti
-# web: www.losersjuegos.com.ar
-# licencia: GPL 2
 
 import random
 import pygame
@@ -62,7 +57,6 @@ class Cursor:
 
 
 class Menu:
-    "Representa un menú con opciones para un juego"
     
     def __init__(self, opciones):
         self.opciones = []
@@ -86,7 +80,7 @@ class Menu:
         self.mantiene_pulsado = False
 
     def actualizar(self):
-        """Altera el valor de 'self.seleccionado' con los direccionales."""
+        
 
         k = pygame.key.get_pressed()
 
@@ -96,10 +90,9 @@ class Menu:
             elif k[K_DOWN]:
                 self.seleccionado += 1
             elif k[K_RETURN]:
-                # Invoca a la función asociada a la opción.
+                
                 self.opciones[self.seleccionado].activar()
 
-        # procura que el cursor esté entre las opciones permitidas
         if self.seleccionado < 0:
             self.seleccionado = 0
         elif self.seleccionado > self.total - 1:
@@ -107,7 +100,6 @@ class Menu:
         
         self.cursor.seleccionar(self.seleccionado)
 
-        # indica si el usuario mantiene pulsada alguna tecla.
         self.mantiene_pulsado = k[K_UP] or k[K_DOWN] or k[K_RETURN]
 
         self.cursor.actualizar()
@@ -116,7 +108,6 @@ class Menu:
             o.actualizar()
 
     def imprimir(self, screen):
-        """Imprime sobre 'screen' el texto de cada opción del menú."""
 
         self.cursor.imprimir(screen)
 
@@ -124,13 +115,13 @@ class Menu:
             opcion.imprimir(screen)
 
 def comenzar_nuevo_juego():
-    print (' Función que muestra un nuevo juego.')
+    print (' Despues de cargar aparece la seleccion de personajes.')
 
 def mostrar_opciones():
     print (" Función que muestra otro menú de opciones.")
 
-def creditos():
-    print (" Función que muestra los creditos del programa.")
+def HighScore():
+    print (" Muestra los 10 top puntajes")
 
 def salir_del_programa():
     import sys
@@ -144,7 +135,7 @@ if __name__ == '__main__':
     opciones = [
         ("Jugar", comenzar_nuevo_juego),
         ("Opciones", mostrar_opciones),
-        ("Creditos", creditos),
+        ("Ranking", HighScore),
         ("Salir", salir_del_programa)
         ]
 
