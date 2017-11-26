@@ -10,7 +10,7 @@ Anthony Del Pozo (C) As Programador Master
 Jose Espinoza As Programador Junior/Diseñador
 Josue Palomino As Diseñador Master
 Luis Villanueva As Programador Junior/Diseñador
-Gustavo Reyes As "El hombre sin sombra"
+Gustavo Reyes As Programador Junior/Documentador
 
     Participaciones especiales de...
 
@@ -23,7 +23,6 @@ Gustavo Reyes As "El hombre sin sombra"
     Agradecimientos
 
 "La Cumbia de Pueblo Lavanda"
-"Pan con Pollo Doña Peta"
 "Manos S.A"
 "La tiendita de Don Pepe"
 "Codigo Facilito"
@@ -31,7 +30,7 @@ Gustavo Reyes As "El hombre sin sombra"
     2017 © Copyright
 Todos los derechos Reservados
 
-
+    #NosVamosARusia
     ¡¡ARRIBA PERÚ!!
 
 
