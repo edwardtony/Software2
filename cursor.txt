@@ -1,0 +1,97 @@
+# coding=utf-8
+
+
+from itertools import cycle
+
+# importa la librería Pygame
+import pygame
+
+
+def cursor2ascii(cursor):
+    """
+    Retorna un cursor representando en formato ascii donde las 'W' representan los píxeles en blanco, las 'B'
+    representan los píxeles negros, y los '.' representan los píxeles transparentes.
+    """
+
+    size, __, xormasks, andmasks = cursor
+    width, height = size
+    byte_cols = width / 8
+
+    text = ''
+
+    text += 'xormasks:\n'
+    for idx, i in enumerate(xormasks):
+        text += '{:08b}'.format(i).replace('0', '.').replace('1', 'B')
+        if idx % byte_cols:
+            text += '\n'
+
+    text += '\nandmasks:\n'
+    for idx, i in enumerate(andmasks):
+        text += '{:08b}'.format(i).replace('0', '.').replace('1', 'W')
+        if idx % byte_cols:
+            text += '\n'
+
+    return text
+
+
+def main():
+    # inicializa Pygame
+    pygame.init()
+
+    # establece el título de la ventana
+    pygame.display.set_caption(u'Cursores predefinidos')
+
+    # establece el tamaño de la ventana
+    pygame.display.set_mode((400, 400))
+
+    # almacena los cursores predefinidos en una secuencia 'list'
+    cursors = [
+        pygame.cursors.arrow,
+        pygame.cursors.diamond,
+        pygame.cursors.broken_x,
+        pygame.cursors.tri_left,
+        pygame.cursors.tri_right,
+    ]
+
+    # convierte una secuencia 'list' en un iterador 'cycle'
+    # 'cycle()' es un iterador infinito
+    # nos permite obtener el siguiente elemento de una lista,
+    # y al llegar al último elemento, nos traslada nuevamente al primer elemento
+    cursors = cycle(cursors)
+
+    # obtiene el siguiente cursor
+    cursor = cursors.next()
+    print cursor
+    print cursor2ascii(cursor)
+
+    # establece el cursor
+    pygame.mouse.set_cursor(*cursor)
+
+    # bucle infinito
+    while True:
+        # obtiene un solo evento de la cola de eventos
+        event = pygame.event.wait()
+
+        # si se presiona el botón 'cerrar' de la ventana
+        if event.type == pygame.QUIT:
+            # detiene la aplicación
+            break
+
+        # si algún botón del mouse es presionado
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            # si se presiona el botón izquierdo del mouse
+            if event.button == 1:
+                # obtiene el siguiente cursor
+                cursor = cursors.next()
+                print cursor
+                print cursor2ascii(cursor)
+
+                # cambia al siguiente cursor
+                pygame.mouse.set_cursor(*cursor)
+
+    # finaliza Pygame
+    pygame.quit()
+
+
+if __name__ == '__main__':
+    main()
