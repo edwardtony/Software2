@@ -8,7 +8,7 @@ texto_lista = '''
     Con las participaciones de...
 Anthony Del Pozo (C) As Programador Master
 Jose Espinoza As Programador Junior/Diseñador
-Josue Palomino As Diseñador Master/Creativo/programador junior/buen amigo
+Josue Palomino As Diseñador Master/Creativo/Programador junior/buen amigo
 Luis Villanueva As Programador Junior/Diseñador
 Gustavo Reyes As Programador Junior/Documentador
 
