@@ -8,7 +8,7 @@ texto_lista = '''
     Con las participaciones de...
 Anthony Del Pozo (C) As Programador Master
 Jose Espinoza As Programador Junior/Diseñador
-Josue Palomino As Diseñador Master
+Josue Palomino As Diseñador Master/Creativo/programador junior/buen amigo
 Luis Villanueva As Programador Junior/Diseñador
 Gustavo Reyes As Programador Junior/Documentador
 
@@ -26,6 +26,7 @@ Gustavo Reyes As Programador Junior/Documentador
 "Manos S.A"
 "La tiendita de Don Pepe"
 "Codigo Facilito"
+
 
     2017 © Copyright
 Todos los derechos Reservados
