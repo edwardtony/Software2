@@ -181,19 +181,20 @@ class Button(FormComponent):
     """
 
     # Constuctor
-    def __init__(self, x=0, y=0, width=200, height=40, border=2, value='', focus=False, args=''):
+    def __init__(self, x=0, y=0, width=200, height=40, border=2, value='', focus=False, args='', color= Color.BLACK):
         self.x = x
         self.y = y
-        self.width = len(value) * 19 if width < len(value) * 19 else width
+        self.width = len(value) * 18 if width < len(value) * 18 else width
         self.height = height
         self.border = border
         self.value = value
         self.focus = focus
         self.args = args
+        self.color = color
 
     # Cambiar el color de los bordes, se modifican con el atributo Focus
     def load_border_color(self):
-        return Color.YELLOW  if self.focus else Color.BLACK
+        return Color.YELLOW  if self.focus else self.color
 
     # Evalua si el botón fue clickeado
     def collidepoint(self, mouse_position):
@@ -262,9 +263,13 @@ class DialogManager():
         self.previous_dialogs = []
         self.index = 0
         self.play = True
+        self.question = 1
+        self.finished = False
 
     def draw(self):
         [dialog.draw() for dialog in self.previous_dialogs]
+        if not self.play:
+            return
         self.current_dialog.draw()
         # for dialog in self.dialogs:
         #     dialog.draw()
@@ -272,28 +277,35 @@ class DialogManager():
     def next_dialog(self):
         self.current_dialog.previous = True
         self.previous_dialogs.append(self.current_dialog)
-        if self.index + 1 < len(self.dialogs):
-            if self.dialogs[self.index + 1].type == Dialog.TYPE_QUESTION:
-                pygame.time.delay(1000)
-            elif self.dialogs[self.index + 1].type == Dialog.TYPE_LAST_ALTERNATIVE:
+        if self.index< len(self.dialogs):
+
+            if self.dialogs[self.index].type == Dialog.TYPE_LAST_ALTERNATIVE:
                 self.play = False
 
-            if self.dialogs[self.index].type == Dialog.TYPE_LAST_ALTERNATIVE and not self.play:
-                return
-            print('ENTREEE')
+            # if self.dialogs[self.index].type == Dialog.TYPE_LAST_ALTERNATIVE and not self.play:
+            #     return
             self.index = self.index + 1
-            self.current_dialog = self.dialogs[self.index]
+            try:
+                if self.dialogs[self.index].type == Dialog.TYPE_QUESTION:
+                    pygame.time.delay(500)
+                self.current_dialog = self.dialogs[self.index]
+            except Exception as e:
+                pass
+        else:
+            print('HOLA')
+            self.finished = True
 
     def change_to_play(self):
+        self.question = self.question + 1
+        # print(self.question)
         self.play = True
 
-    # Elige el botón clickeado y deselecciona los otros botones
-    def update(self, clicked_button):
-        for button in self.buttons:
-            if button == clicked_button:
-                button.focus = True
-            else:
-                button.focus = False
+    def remove_alternative(self):
+        self.previous_dialogs.pop()
+        self.previous_dialogs.pop()
+        self.previous_dialogs.pop()
+        self.previous_dialogs.pop()
+
 
     # Agrega botones al Radio Group
     def add_dialog(self, dialog):
@@ -313,10 +325,10 @@ class Dialog():
     TYPE_QUESTION = 'QUESTION'
     TYPE_LAST_ALTERNATIVE = 'LAST_ALTERNATIVE'
 
-    def __init__(self, x=0, y=0, value='', type = TYPE_LABEL, color=Color.BLACK):
+    def __init__(self, x=0, y=0, value='', type = TYPE_LABEL, color=Color.BLACK, h=30):
         self.x = x
         self.y = y
-        self.h = 30
+        self.h = h
         self.value = value
         self.temp = ""
         self.index = 0
@@ -326,15 +338,16 @@ class Dialog():
         self.type = type
 
     def draw(self):
-        print(self.temp)
         if self.index <= len(self.value):
-            self.temp = self.value[0:self.index]
-            self.index = self.index + 1
-            if self.effect == None:
-                self.effect = pygame.mixer.Sound('mp3/dialog.wav')
-                self.effect.play()
+            # self.temp = self.value[0:self.index]
+            # self.index = self.index + 1
+            # if self.effect == None:
+            #     self.effect = pygame.mixer.Sound('mp3/dialog.wav')
+            #     self.effect.play()
+            self.temp = self.value
+            self.index = len(self.value) + 1
         elif self.previous == False:
-            self.effect.stop()
+            # self.effect.stop()
             self.manager.next_dialog()
             pygame.time.delay(500)
 

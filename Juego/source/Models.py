@@ -61,7 +61,6 @@ class TeacherDB():
         self.presentation = object['presentation']
         self.description = object['description']
         self.questions = object['question']
-        print(object)
 
 class ScenarioDB():
     def __init__(self,object):
@@ -92,3 +91,4 @@ class PlayerDB():
         self.entrant = '2017-01'
         self.graduate = '???????'
         self.score = 0
+        self.lifes = 3

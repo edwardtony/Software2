@@ -26,6 +26,7 @@ class CBManager:
         self.initial_page = None
         self.scenarios = []
         self.current_page = None
+        self.game_over_page = None
         self.dt = pygame.time.Clock().tick(120)
         self.pause = False
         self.transition = False
@@ -40,13 +41,24 @@ class CBManager:
         for character in content['characters']:
             characters.append(CharacterDB(character))
 
+
+        self.game_over_page = GameOverPage(self.screen, self)
         self.initial_page = InitialPage(self.screen, characters, self)
+        self.tutorial_page = TutorialPage(self.screen, self)
+
+        self.first_page = FistPage(self.screen, self)
+        self.first_page.initial_page = self.initial_page
+        self.first_page.tutorial_page = self.tutorial_page
+
+        self.tutorial_page.set_next_page(self.first_page)
+        self.loading_page = LoadingPage(self.screen,self)
+        self.loading_page.set_next_page(self.first_page)
 
         for index, scenario in enumerate(content['scenarios']):
             scenario_s = ScenarioDB(scenario)
             self.scenarios.append(ScenarioPage(self.screen, scenario_s, self, index))
         self.managePages()
-        self.current_page = self.initial_page
+        self.current_page = self.loading_page
 
     def manage(self):
         self.load_service()
@@ -66,7 +78,11 @@ class CBManager:
             #     pygame.time.wait(1000)
             #     self.transition = False
 
-
+    def game_over(self):
+        if self.current_page.effect:
+            self.current_page.effect.stop()
+        self.game_over_page.set_next_page(self.initial_page)
+        self.current_page = self.game_over_page
 
     def managePages(self):
         self.initial_page.set_next_page(self.scenarios[0])
@@ -77,7 +93,21 @@ class CBManager:
     def go_to_next_page(self):
         # self.transition = True
         pygame.draw.rect(self.screen, Color.BLACK,(0,0,self.size[0],self.size[1]), 0)
+        if self.current_page.effect:
+            self.current_page.effect.stop()
         self.current_page = self.current_page.next_page
+        self.current_page.manage()
+
+    def go_to_initial_page(self):
+        self.current_page = self.current_page.initial_page
+        self.current_page.manage()
+
+    def go_to_tutorial_page(self):
+        self.current_page = self.current_page.tutorial_page
+        self.current_page.manage()
+
+    def go_to_high_score_page(self):
+        self.current_page = self.current_page.high_score_page
         self.current_page.manage()
 
 # Método principal que ejecuta todo el Hilo

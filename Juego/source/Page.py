@@ -2,15 +2,18 @@
 # -*- coding: utf-8 -*-
 # Imports
 
-import pygame
+import pygame, time ,random
+from Menu import *
 from source.Models import *
 from source.Entities import *
 from source.libs.CBForm import *
 from source.Utils import *
 from source.Config import *
-import random
 
 class Page:
+
+    def __init__(self):
+        self.effect = None
 
     def set_next_page(self,page):
         self.next_page = page
@@ -24,6 +27,9 @@ class Page:
     def key_update(self):
         pass
 
+    def go_to_next_page(self):
+        self.manager.go_to_next_page()
+
 class InitialPage(Page):
 
     def __init__(self, screen, characters, manager):
@@ -32,6 +38,7 @@ class InitialPage(Page):
         self.characters = self.loadCharacter(characters)
         self.manage()
         self.character_buttons = []
+        self.effect = None
 
     def loadCharacter(self, characters):
         characters_arr = []
@@ -63,7 +70,7 @@ class InitialPage(Page):
         label3 = Label(5,580,'Presionar "ctrl" para transformar',20)
 
         # Se crean los componentes del formulario
-        self.edit_text = EditText(500,390,320,35,2,'Anthony',True,20)
+        self.edit_text = EditText(500,390,320,35,2,'Anthony777',True,20)
 
         # for character in characters:
         #     self.character_buttons.append(Button(500,290,130,35,2,'Cachimbo',True,'Cachimbo'))
@@ -93,7 +100,7 @@ class InitialPage(Page):
     def draw(self):
         self.form.draw()
         # width = self.screen.get_rect().width
-        [character.update(self.manager.dt) for character in self.characters]
+        [character.update() for character in self.characters]
 
         # self.cachimbo.update(self.manager.dt)
         # self.cachimba.update(self.manager.dt)
@@ -103,10 +110,10 @@ class InitialPage(Page):
             self.characters[1].draw()
 
     def key_update(self, event):
-        if event.type == KEYDOWN and event.key == pygame.K_p and not self.manager.current_page == self.manager.initial_page:
-            self.manager.pause = not self.manager.pause
-        if self.manager.pause:
-            return
+        # if event.type == KEYDOWN and event.key == pygame.K_p and not self.manager.current_page == self.manager.initial_page:
+        #     self.manager.pause = not self.manager.pause
+        # if self.manager.pause:
+        #     return
         if event.type == KEYDOWN:
             if event.key == pygame.K_RETURN:
                 self.go_to_next_page()
@@ -173,13 +180,13 @@ class ScenarioPage(Page):
     }
 
     YEARS = ['2017-1','2017-2','2018-1','2018-2','2019-1']
-    MUSIC = ['music.mp3','music.mp3','music.mp3','music.mp3','final_boss.mp3']
+    MUSIC = ['music.wav','music.wav','music.wav','music.wav','final_boss.wav']
 
     def __init__(self, screen, scenario, manager, index = 0):
         self.screen = screen
         self.scenario = scenario
         self.index = index
-        print(self.scenario.teacher.name)
+        # print(self.scenario.teacher.name)
         # print(self.scenario.teacher.course)
         # print(self.scenario.teacher.image)
         self.manager = manager
@@ -196,21 +203,25 @@ class ScenarioPage(Page):
     def manage(self):
         # Objetos en pantalla
         # Corregir el nombre de la imagen, no en duro
-        self.character = Character(self.screen,self.manager.player.character.character,3,50,470)
-        self.boss = Boss(self.screen,self.scenario.teacher,3,400,420,1.2)
+        self.character = Character(self.screen,self.manager.player.character.character,3,50,470,1,0,self.manager.player)
+        self.character.is_initial = True
+        self.boss = Boss(self.screen,self.scenario.teacher,3,400,420,self.character,1.2)
         self.form = Form(self.screen)
         self.name = Title(10,10,self.manager.player.name,Color.BLACK,'H5')
         self.year = Title(440,10,self.YEARS[self.index],Color.BLACK,'H3')
         self.form.add_child(self.name)
         self.form.add_child(self.year)
 
-        print('MUSICAA')
-        print('mp3/' + self.MUSIC[self.index])
-        # pygame.mixer.music.load('mp3/' + self.MUSIC[self.index])
-        # pygame.mixer.music.play(-1)
+        self.effect = pygame.mixer.Sound('mp3/' + self.MUSIC[self.index])
+        self.effect.set_volume(.5)
+        self.effect.play(-1)
 
     def draw(self):
-        if self.character.pos_x >= 9890:
+        if self.manager.player.lifes <= 0:
+            self.manager.game_over()
+            self.boss.end_music()
+
+        if self.character.pos_x >= 9850:
             self.go_to_next_page()
         # print(pygame.time.get_ticks())
         calc = self.character.pos_x - self.screen.get_rect().width / 2
@@ -237,7 +248,7 @@ class ScenarioPage(Page):
         #     s.set_colorkey(Color.BLACK)
         #     pygame.draw.rect(s, Color.BLACK,(0,0,self.manager.size[0],self.manager.size[1]), 0)
         #     s.set_alpha(75)
-        self.boss.update(self.character)
+        self.boss.update()
         self.boss.draw()
         self.draw_hearts()
 
@@ -258,6 +269,7 @@ class ScenarioPage(Page):
             return
         else:
             self.character.play()
+
         if event.type == KEYDOWN:
             self.character.key_down(event.key)
             self.boss.key_down(event.key)
@@ -265,7 +277,7 @@ class ScenarioPage(Page):
             self.character.key_up(event.key)
 
     def draw_hearts(self):
-        for i in range(0,self.character.life):
+        for i in range(0,self.manager.player.lifes):
             self.screen.blit(pygame.image.load(Config.PATH_OBJECTS + "hearts.png").convert_alpha(), (10 + i*50,40))
 
     def generate_obstacles(self):
@@ -316,8 +328,6 @@ class ScenarioPage(Page):
         for i in range(0, 20):
             self.platforms.add(Platform(1500 + i*400, random.randint(300,500), 200))
 
-    def go_to_next_page(self):
-        self.manager.go_to_next_page()
 
 class Platform:
     def __init__(self,x,y,width):
@@ -363,3 +373,169 @@ class Platforms:
     def do(self, player):
         self.testCollision(player)
         self.draw()
+
+
+
+class GameOverPage(Page):
+
+    YEARS = ['2017-1','2017-2','2018-1','2018-2','2019-1']
+    MUSIC = ['music.wav','music.wav','music.wav','music.wav','final_boss.wav']
+
+    def __init__(self, screen, manager):
+        self.screen = screen
+        self.manager = manager
+        self.form = Form(self.screen)
+        self.dialog_manager= DialogManager()
+        self.manage()
+        self.effect = None
+
+    def manage(self):
+        self.dialog_manager.add_dialog(Dialog(360,130,"Exigete ", Dialog.TYPE_LABEL, Color.WHITE,100))
+        self.dialog_manager.add_dialog(Dialog(375,210, "Innova ", Dialog.TYPE_LABEL, Color.WHITE,100))
+        self.dialog_manager.add_dialog(Dialog(410,300,   "UPC ", Dialog.TYPE_LABEL, Color.WHITE,100))
+        self.dialog_manager.add_dialog(Dialog(320,390,   "Cierre de inscripciones en Navidad ", Dialog.TYPE_LABEL, Color.WHITE,30))
+        self.form.add_child(self.dialog_manager)
+        self.play_button = Button(440,430,0,40,2,'Jugar',False, '', Color.WHITE)
+        self.form.add_child(self.play_button)
+
+
+    def draw(self):
+        if self.effect == None:
+            self.effect = pygame.mixer.Sound('mp3/game_over.wav')
+            self.effect.set_volume(.5)
+            self.effect.play()
+
+        pygame.draw.rect(self.screen, Color.BLACK,(0,0,self.manager.size[0],self.manager.size[1]),0)
+        self.form.draw()
+
+    def key_update(self, event):
+        if event.type == MOUSEBUTTONDOWN:
+            mouse_position = pygame.mouse.get_pos()
+            if self.play_button.rect.collidepoint(mouse_position):
+                self.go_to_next_page()
+
+
+class LoadingPage(Page):
+
+    def __init__(self, screen, manager):
+        self.smallfont = pygame.font.SysFont("comicsansms", 25)
+        self.screen = screen
+        self.manager = manager
+        self.progress = 0
+        self.form = Form(self.screen)
+        self.logo = ImageGIF(200,300,Config.PATH_LOGO_CACHIMBO_BROS)
+        self.form.add_child(self.logo)
+        self.effect = None
+
+    def loading(self,progress):
+        self.form.draw()
+        if progress < 100:
+            text = self.smallfont.render("Loading: " + str(int(progress)) +"%", True, Color.GREEN)
+        else:
+            text = self.smallfont.render("Loading: " + str(100) + "%", True, Color.GREEN)
+
+        self.screen.blit(text, [413, 333])
+
+    def draw(self):
+        if self.progress/2 > 100:
+            self.manager.go_to_next_page()
+        time_count = 0.01
+        self.progress = self.progress + 5
+        self.screen.fill(Color.BLACK)
+        pygame.draw.rect(self.screen, Color.GREEN, [393, 283, 204, 49])
+        pygame.draw.rect(self.screen, Color.BLACK, [394, 284, 202, 47])
+        if(self.progress/2 > 100):
+           pygame.draw.rect(self.screen, Color.GREEN, [395, 285, 200, 45])
+        else:
+           pygame.draw.rect(self.screen, Color.GREEN, [395, 285, self.progress, 45])
+        self.loading(self.progress/2)
+        pygame.display.flip()
+
+        time.sleep(time_count)
+
+    def key_update(self, event):
+        pass
+
+
+class FistPage(Page):
+
+
+
+    def __init__(self, screen, manager):
+        self.screen = screen
+        self.manager = manager
+        self.fondo = pygame.image.load(Config.PATH_SCENARIOS + "ciudad.png").convert()
+        # self.form = Form(self.screen)
+        # self.logo = ImageGIF(200,300,Config.PATH_LOGO_CACHIMBO_BROS)
+        # self.form.add_child(self.logo)
+        self.effect = None
+        self.opciones = [
+            ("Jugar", self.comenzar_nuevo_juego),
+            ("Tutorial", self.mostrar_tutorial),
+            ("Ranking", self.HighScore),
+            ("Salir", self.salir_del_programa)
+            ]
+        self.menu = Menu(self.opciones)
+
+    def draw(self):
+        self.screen.blit(self.fondo,(0,0))
+        self.menu.actualizar()
+        self.menu.imprimir(self.screen)
+        pygame.display.flip()
+
+    def key_update(self, event):
+        pass
+
+    def comenzar_nuevo_juego(self):
+        self.manager.go_to_initial_page()
+        print (' Despues de cargar aparece la seleccion de personajes.')
+
+    def mostrar_tutorial(self):
+        self.manager.go_to_tutorial_page()
+        print (" Función que muestra otro menú de opciones.")
+
+    def HighScore(self):
+        print (" Muestra los 10 top puntajes")
+
+    def salir_del_programa(self):
+        import sys
+        sys.exit(0)
+
+class TutorialPage(Page):
+    def __init__(self, screen, manager):
+        self.screen = screen
+        self.manager = manager
+        self.fondo = pygame.image.load(Config.PATH_SCENARIOS + "tutorial.png").convert()
+        # self.form = Form(self.screen)
+        # self.logo = ImageGIF(200,300,Config.PATH_LOGO_CACHIMBO_BROS)
+        # self.form.add_child(self.logo)
+        self.effect = None
+
+    def draw(self):
+        self.screen.blit(self.fondo,(0,0))
+        pygame.display.flip()
+
+    def key_update(self, event):
+        if event.type == KEYDOWN:
+            if event.key == K_q:
+                self.manager.go_to_next_page()
+
+
+class HighScore(Page):
+    def __init__(self, screen, manager):
+        self.screen = screen
+        self.manager = manager
+        self.fondo = pygame.image.load(Config.PATH_SCENARIOS + "tutorial.png").convert()
+        # self.form = Form(self.screen)
+        # self.logo = ImageGIF(200,300,Config.PATH_LOGO_CACHIMBO_BROS)
+        # self.form.add_child(self.logo)
+        self.effect = None
+
+    def draw(self):
+        self.screen.blit(self.fondo,(0,0))
+        pygame.display.flip()
+
+    def key_update(self, event):
+        if event.type == KEYDOWN:
+            if event.key == K_q:
+                self.manager.go_to_next_page()

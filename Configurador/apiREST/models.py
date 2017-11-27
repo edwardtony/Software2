@@ -68,6 +68,7 @@ class Stage(models.Model):
     teacher = models.ForeignKey(Teacher,on_delete = models.CASCADE)
     quantity_question = models.IntegerField(default=1)
     time_question = models.IntegerField(default=30)
+    order = models.IntegerField(default=1)
 
     def as_dict(self):
         result = dict(

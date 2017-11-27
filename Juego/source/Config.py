@@ -9,3 +9,4 @@ class Config:
     PATH_LOGO_CACHIMBO_BROS = 'assets/img/logo.png'
     PATH_OBSTACLES = 'assets/img/obstacles/'
     PATH_OBJECTS = 'assets/img/objects/'
+    PATH_SCENARIOS = 'assets/img/scenarios/'

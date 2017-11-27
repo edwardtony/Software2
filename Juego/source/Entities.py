@@ -49,17 +49,19 @@ class GameEntity(pygame.sprite.Sprite):
 
 class Character(GameEntity):
 
+
     """
         Clase encargada de gestionar la configuración y acciones de un personaje,
         Extiende de GameEntity
     """
 
+
     # Constructor
-    def __init__(self, display, character, number_of_sprites, px, py, scale = 1, mode = 0):
+    def __init__(self, display, character, number_of_sprites, px, py, scale = 1, mode = 0, player = None):
         super(Character, self).__init__(display)
         # self.speed = character.velocity * 7
-        self.speed = 100
-        self.life = 3
+        self.speed = 50
+        self.player = player
         self.character = character
         self.paths = (character.photo_normal, character.photo_super, character.photo_ultra)
         self.number_of_sprites = number_of_sprites
@@ -74,6 +76,7 @@ class Character(GameEntity):
         self.jumping = False
         self.base = 50
         self.alt = 1
+        self.is_initial = False
 
     # Permite dimensionar la imagen escalándola de tamaño
     def scale(self,scale):
@@ -110,6 +113,9 @@ class Character(GameEntity):
         self.states_dict["resting_left"] = self.resting_left_state
         self.states_dict["resting_right"] = self.resting_right_state
         self.set_current_state("resting_right")
+
+    def damage(self):
+        self.player.lifes = self.player.lifes - 1
 
     # Método encargado de gestionar la lógica de la gravedad, gravedad es la velocidad con la cual caen los objetos en el juego
     def calculate_gravity(self):
@@ -148,7 +154,7 @@ class Character(GameEntity):
         elif key == pygame.K_RIGHT:
             self.set_current_state("walking_right")
             self.dx = self.speed
-        elif key == pygame.K_RCTRL or key == pygame.K_LCTRL:
+        elif key == pygame.K_RCTRL or key == pygame.K_LCTRL and self.is_initial:
             self.mode = int(self.mode == 0)
             self.load_image()
             if(self.mode):
@@ -179,8 +185,10 @@ class Character(GameEntity):
             self.key_up(event.key)
 
     # Método que actualiza el estado y Sprite del Character
-    def update(self, boss):
-        if self.pos_x > 9330 and boss.status == Boss.STATUS_INITIAL:
+    def update(self, boss = None):
+        # if not boss == None:
+        #     print(boss.life)
+        if self.pos_x > 9330 and boss.status == Boss.STATUS_INITIAL and not boss.life == 0:
             self.dx = 0
             boss.in_class = True
             return
@@ -230,10 +238,11 @@ class Boss(GameEntity):
     STATUS_DEFEATED = "DEFEATED"
 
     # Constructor
-    def __init__(self, display, boss, number_of_sprites, px, py, scale = 1):
+    def __init__(self, display, boss, number_of_sprites, px, py, character,scale = 1):
         super(Boss, self).__init__(display)
         self.speed = 10
         self.boss = boss
+        self.life = len(boss.questions)
         self.number_of_sprites = number_of_sprites
         self.load_image()
         self.image = self.current_state.get_sprite()
@@ -241,9 +250,10 @@ class Boss(GameEntity):
         self.rect.x = px
         self.rect.y = py
         self.rect.x = 5500
+        self.character = character
         self.status = Boss.STATUS_INITIAL
         self.in_class = False
-        self.message = Message(self.display, "HOLA", self)
+        self.message = Message(self.display, self)
 
     # Permite dimensionar la imagen escalándola de tamaño
     def scale(self,scale):
@@ -268,13 +278,16 @@ class Boss(GameEntity):
         self.states_dict["resting_left"] = self.resting_left_state
         self.set_current_state("resting_left")
 
+    def end_music(self):
+        self.message.effect.stop()
+
     # Método que actualiza el estado y Sprite del Character
-    def update(self, character):
-        if self.in_class:
+    def update(self):
+        if self.in_class and not self.message.finished:
             self.show_message()
             return
         self.image = self.current_state.get_sprite()
-        self.rect.x = self.rect.x - character.dx / 2
+        self.rect.x = self.rect.x - self.character.dx / 2
 
     def show_message(self):
         self.message.update()
@@ -297,33 +310,63 @@ class Boss(GameEntity):
 
     # Método encargado de las interacciones del teclado con el personaje (KEY_DOWN)
     def key_down(self, key):
-        if key == K_a:
-            print('A')
-            self.message.dialog_manager_title.change_to_play()
-        elif key == K_b:
-            self.message.dialog_manager_title.change_to_play()
-            print('B')
-        elif key == K_c:
-            self.message.dialog_manager_title.change_to_play()
-            print('C')
+        if self.message.dialog_manager_title.play == False and  key in [K_1,K_2,K_3]:
+            print(key)
+            self.message.validate_answer(key - 48)
+            # print(key)
+            # if key == K_1:
+            #     self.message.dialog_manager_title.change_to_play()
+            # elif key == K_2:
+            #     self.message.dialog_manager_title.change_to_play()
+            # elif key == K_3:
+            #     self.message.dialog_manager_title.change_to_play()
 
 
 
 class Message(GameEntity):
 
-    def __init__(self,display, message, teacher):
+    def __init__(self,display, teacher):
         super(Message, self).__init__(display)
         self.path = Config.PATH_OBJECTS + "globo_dialogo.png"
         self.image = pygame.image.load(self.path)
         self.form = Form(display)
         self.teacher = teacher
+        self.effect = None
         self.dialog_manager_title = DialogManager()
+        self.answers = []
         self.generate_dialogs()
+        self.finished = False
+        # self.effect.stop()
 
 
     def update(self):
+        if self.dialog_manager_title.question == len(self.teacher.boss.questions) + 1:
+            self.finished = True
+
+        if self.effect == None:
+            self.effect = pygame.mixer.Sound('mp3/battle.wav')
+            self.effect.set_volume(.5)
+            self.effect.play()
+
+        if self.finished:
+            self.effect.stop()
+
+
         self.display.blit(self.image, (150,50))
         self.form.draw()
+
+    def validate_answer(self, answer):
+        print(self.answers,self.dialog_manager_title.question - 1)
+        if self.answers[self.dialog_manager_title.question - 1] == answer:
+            effect = pygame.mixer.Sound('mp3/scream.wav')
+            effect.play()
+            self.teacher.life = self.teacher.life - 1
+            self.dialog_manager_title.remove_alternative()
+            self.dialog_manager_title.change_to_play()
+        else:
+            effect = pygame.mixer.Sound('mp3/damage.wav')
+            effect.play()
+            self.teacher.character.damage()
 
     def generate_dialogs(self):
         self.dialog_manager_title.add_dialog(Dialog(200, 110, self.teacher.boss.presentation + " "))
@@ -331,8 +374,19 @@ class Message(GameEntity):
         self.dialog_manager_title.add_dialog(Dialog(200, 180, '(Presionar la tecla que corresponda a tu respuesta) '))
         for index, question in enumerate(self.teacher.boss.questions):
             self.dialog_manager_title.add_dialog(Dialog(200, 230, 'Pregunta ' + str(index + 1) + ": " + question['description'] + " ",Dialog.TYPE_QUESTION))
-            self.dialog_manager_title.add_dialog(Dialog(200, 280, "    a)" + question['alternative'][0]['description'] + " "))
-            self.dialog_manager_title.add_dialog(Dialog(200, 310, "    b)" + question['alternative'][1]['description'] + " "))
-            self.dialog_manager_title.add_dialog(Dialog(200, 340, "    c)" + question['alternative'][2]['description'] + " ", Dialog.TYPE_LAST_ALTERNATIVE))
+            for index, alternative in enumerate(question['alternative']):
+                # print('ALTERNATIVE',alternative['is_true'])
+                if alternative['is_true']:
+                    # print(alternative['description'])
+                    # print(index + 1)
+                    self.answers.append(index + 1)
+                    # print(self.answers)
+                if index + 1== len(question['alternative']):
+                    self.dialog_manager_title.add_dialog(Dialog(200, 280 + index*30, "    " + str(index + 1) + ") " + alternative['description'] + " ", Dialog.TYPE_LAST_ALTERNATIVE))
+                else:
+                    self.dialog_manager_title.add_dialog(Dialog(200, 280 + index*30, "    " + str(index + 1) + ") " + alternative['description'] + " "))
+            # self.dialog_manager_title.add_dialog(Dialog(200, 280, "    1)" + question['alternative'][0]['description'] + " "))
+            # self.dialog_manager_title.add_dialog(Dialog(200, 310, "    2)" + question['alternative'][1]['description'] + " "))
+            # self.dialog_manager_title.add_dialog(Dialog(200, 340, "    3)" + question['alternative'][2]['description'] + " "))
         # dialog_manager.add_dialog(self.dialog_manager_question)
         self.form.add_child(self.dialog_manager_title)

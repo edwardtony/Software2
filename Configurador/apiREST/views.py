@@ -23,7 +23,8 @@ def consoleLog(text='Información',data= ''):
 
 @csrf_exempt
 def scenarios(request):
-	stages =  [state.as_dict() for state in Stage.objects.all()]
+	# stages =  [state.as_dict() for state in Stage.objects.all().order_by('order')]
+	stages =  [state.as_dict() for state in Stage.objects.all().filter(order__in=[1])]
 	return JSONResponse(stages)
 
 @csrf_exempt
