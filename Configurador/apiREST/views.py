@@ -42,7 +42,7 @@ def player_list(request):
     """
     rows = request.GET.get('rows',10)
     if request.method == 'GET':
-        players = [player.as_dict() for player in Player.objects.all()[0:rows]]
+        players = [player.as_dict() for player in Player.objects.all().order_by('-score')[0:int(rows)]]
         return JSONResponse(players)
     elif request.method == 'POST':
         data = JSONParser().parse(request)

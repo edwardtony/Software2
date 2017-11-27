@@ -9,6 +9,7 @@ from source.Entities import *
 from source.libs.CBForm import *
 from source.Utils import *
 from source.Config import *
+from source.Text import texto_lista
 
 class Page:
 
@@ -459,8 +460,6 @@ class LoadingPage(Page):
 
 class FistPage(Page):
 
-
-
     def __init__(self, screen, manager):
         self.screen = screen
         self.manager = manager
@@ -495,6 +494,7 @@ class FistPage(Page):
         print (" Función que muestra otro menú de opciones.")
 
     def HighScore(self):
+        self.manager.go_to_high_score_page()
         print (" Muestra los 10 top puntajes")
 
     def salir_del_programa(self):
@@ -502,16 +502,14 @@ class FistPage(Page):
         sys.exit(0)
 
 class TutorialPage(Page):
-    def __init__(self, screen, manager):
+    def __init__(self, screen, manager,):
         self.screen = screen
         self.manager = manager
         self.fondo = pygame.image.load(Config.PATH_SCENARIOS + "tutorial.png").convert()
-        # self.form = Form(self.screen)
-        # self.logo = ImageGIF(200,300,Config.PATH_LOGO_CACHIMBO_BROS)
-        # self.form.add_child(self.logo)
         self.effect = None
 
     def draw(self):
+        self.screen.fill(Color.BLACK)
         self.screen.blit(self.fondo,(0,0))
         pygame.display.flip()
 
@@ -521,19 +519,94 @@ class TutorialPage(Page):
                 self.manager.go_to_next_page()
 
 
-class HighScore(Page):
+class CreditsPage(Page):
     def __init__(self, screen, manager):
         self.screen = screen
         self.manager = manager
-        self.fondo = pygame.image.load(Config.PATH_SCENARIOS + "tutorial.png").convert()
-        # self.form = Form(self.screen)
-        # self.logo = ImageGIF(200,300,Config.PATH_LOGO_CACHIMBO_BROS)
-        # self.form.add_child(self.logo)
         self.effect = None
+
+        self.lst = texto_lista
+        self.size = 20
+        self.color = Color.WHITE
+        self.buff_centery = self.screen.get_rect().height/2 + 5
+        self.buff_lines = 35
+        self.timer = 0.0
+        self.delay = 0
+        self.manage()
+
+    def manage(self):
+        #arreglo de lineas
+        self.text = []
+        #Se agregan las lineas al arreglo
+        for i, line in enumerate(self.lst):
+            l = self.hacer_texto(line)
+            l[1].y += i*self.buff_lines
+            self.text.append(l)
+
+    def update(self):
+        if pygame.time.get_ticks() - self.timer > self.delay:
+            self.timer = pygame.time.get_ticks()
+            #Se va moviendo hacia abajo
+            for texto, rect in self.text:
+                rect.y -= 4
+
+    def materializar(self, surfa):
+        for text, rect in self.text:
+            surfa.blit(text, rect)
+
+    def draw(self):
+        if self.effect == None:
+            self.effect = pygame.mixer.Sound('mp3/lavandeira.wav')
+            self.effect.set_volume(.5)
+            self.effect.play()
+        self.screen.fill((0,0,0))
+        self.update()
+        self.materializar(self.screen)
+        pygame.display.update()
+
+
+    def hacer_texto(self, msj):
+        #Creas la fuente
+        font = pygame.font.SysFont('comicsansms', self.size)
+        #Creas el texto
+        text = font.render(msj,True,self.color)
+        #Obtener rect y redefinir center
+        rect = text.get_rect(center=(self.screen.get_rect().centerx, self.screen.get_rect().centery + self.buff_centery))
+        #Devolver texto y rect
+        return text, rect
+
+    def key_update(self, event):
+        if event.type == KEYDOWN:
+            if event.key == K_q:
+                self.manager.go_to_next_page()
+
+
+class HighScorePage(Page):
+    def __init__(self, screen, manager, highs_score):
+        self.screen = screen
+        self.manager = manager
+        self.highs_score = highs_score
+        self.fondo = pygame.image.load(Config.PATH_SCENARIOS + "book.png").convert()
+        self.form = Form(self.screen)
+        self.effect = None
+        self.manage()
+
+    def manage(self):
+        self.form.add_child(Label(200,70,"NOMBRE        PUNTAJE", 30, Color.BLACK))
+        self.form.add_child(Label(590,70,"NOMBRE        PUNTAJE", 30, Color.BLACK))
+        col = 200
+        for index, score in enumerate(self.highs_score['highs_score']):
+            right = 70 + 70*(index+1)
+            if index > 4:
+                col = 590
+                right = 70 + 70*(index-5 +1)
+            player = PlayerDB(score)
+            space = ' '*((15-len(player.name))*2)
+            self.form.add_child(Label(col,right,player.name + space + str(player.score), 30, Color.BLACK))
 
     def draw(self):
         self.screen.blit(self.fondo,(0,0))
-        pygame.display.flip()
+        self.form.draw()
 
     def key_update(self, event):
         if event.type == KEYDOWN:

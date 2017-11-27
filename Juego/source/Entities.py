@@ -59,8 +59,8 @@ class Character(GameEntity):
     # Constructor
     def __init__(self, display, character, number_of_sprites, px, py, scale = 1, mode = 0, player = None):
         super(Character, self).__init__(display)
-        # self.speed = character.velocity * 7
-        self.speed = 50
+        self.speed = character.velocity * 7
+        # self.speed = 50
         self.player = player
         self.character = character
         self.paths = (character.photo_normal, character.photo_super, character.photo_ultra)

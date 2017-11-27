@@ -36,6 +36,7 @@ class CBManager:
 
     def load_service(self):
         content = self.service.get_data()
+        highs_score = self.service.get_highs_score()
         # print(content)
         characters = []
         for character in content['characters']:
@@ -45,11 +46,16 @@ class CBManager:
         self.game_over_page = GameOverPage(self.screen, self)
         self.initial_page = InitialPage(self.screen, characters, self)
         self.tutorial_page = TutorialPage(self.screen, self)
+        self.high_score_page = HighScorePage(self.screen, self, highs_score)
+        self.credits_page = CreditsPage(self.screen, self)
 
         self.first_page = FistPage(self.screen, self)
         self.first_page.initial_page = self.initial_page
         self.first_page.tutorial_page = self.tutorial_page
+        self.first_page.high_score_page = self.high_score_page
 
+        self.high_score_page.set_next_page(self.first_page)
+        self.credits_page.set_next_page(self.first_page)
         self.tutorial_page.set_next_page(self.first_page)
         self.loading_page = LoadingPage(self.screen,self)
         self.loading_page.set_next_page(self.first_page)
@@ -108,6 +114,10 @@ class CBManager:
 
     def go_to_high_score_page(self):
         self.current_page = self.current_page.high_score_page
+        self.current_page.manage()
+
+    def go_to_credits(self):
+        self.current_page = self.credits_page
         self.current_page.manage()
 
 # Método principal que ejecuta todo el Hilo

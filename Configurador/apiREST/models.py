@@ -167,7 +167,7 @@ class Character(models.Model):
 class Player(models.Model):
     name = models.CharField(max_length=40)
     initial_year = models.CharField(max_length=10, default="2017-01")
-    finish_year = models.CharField(max_length=10, default="2017-01")
+    finish_year = models.CharField(max_length=10, default="2019-01")
     score = models.IntegerField(default=0)
     character = models.ForeignKey(Character)
 
