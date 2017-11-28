@@ -23,8 +23,8 @@ def consoleLog(text='Información',data= ''):
 
 @csrf_exempt
 def scenarios(request):
-	# stages =  [state.as_dict() for state in Stage.objects.all().order_by('order')]
-	stages =  [state.as_dict() for state in Stage.objects.all().filter(order__in=[1])]
+	stages =  [state.as_dict() for state in Stage.objects.all().order_by('order')]
+	# stages =  [state.as_dict() for state in Stage.objects.all().filter(order__in=[1])]
 	return JSONResponse(stages)
 
 @csrf_exempt
@@ -45,7 +45,9 @@ def player_list(request):
         players = [player.as_dict() for player in Player.objects.all().order_by('-score')[0:int(rows)]]
         return JSONResponse(players)
     elif request.method == 'POST':
+        print('request',request.body)
         data = JSONParser().parse(request)
+        print('data',data)
         serializer = PlayerSerializer(data=data)
         if serializer.is_valid():
             serializer.save()

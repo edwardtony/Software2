@@ -339,13 +339,13 @@ class Dialog():
 
     def draw(self):
         if self.index <= len(self.value):
-            # self.temp = self.value[0:self.index]
-            # self.index = self.index + 1
-            # if self.effect == None:
-            #     self.effect = pygame.mixer.Sound('mp3/dialog.wav')
-            #     self.effect.play()
-            self.temp = self.value
-            self.index = len(self.value) + 1
+            self.temp = self.value[0:self.index]
+            self.index = self.index + 1
+            if self.effect == None:
+                self.effect = pygame.mixer.Sound('mp3/dialog.wav')
+                self.effect.play()
+            # self.temp = self.value
+            # self.index = len(self.value) + 1
         elif self.previous == False:
             # self.effect.stop()
             self.manager.next_dialog()

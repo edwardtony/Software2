@@ -1,5 +1,6 @@
 import requests
 import urllib2
+import urllib
 import json
 
 class DataService():
@@ -18,3 +19,15 @@ class DataService():
 		data = {u'highs_score':json.loads(highs_score)}
 		# print(data['scenarios'][0]['name'])
 		return data
+
+
+	def post_score(self, player):
+		url = 'http://localhost:8000/player_list/'
+		opener = urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
+		data = urllib.urlencode({'name' : player.name,
+								'initial_year'  : player.entrant,
+								'finish_year' : player.graduate,
+								'score': player.score + player.lifes * 1000,
+								'character': player.character})
+		content = opener.open(url, data=data).read()
+		urllib2.urlopen('http://localhost:8000/player_list/').read()

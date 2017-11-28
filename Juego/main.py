@@ -101,8 +101,11 @@ class CBManager:
         pygame.draw.rect(self.screen, Color.BLACK,(0,0,self.size[0],self.size[1]), 0)
         if self.current_page.effect:
             self.current_page.effect.stop()
-        self.current_page = self.current_page.next_page
-        self.current_page.manage()
+        try:
+            self.current_page = self.current_page.next_page
+            self.current_page.manage()
+        except Exception as e:
+            self.current_page = self.credits_page
 
     def go_to_initial_page(self):
         self.current_page = self.current_page.initial_page
