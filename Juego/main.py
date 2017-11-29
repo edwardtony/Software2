@@ -33,6 +33,8 @@ class CBManager:
         self.size = width, height = (960,600)
         self.screen = pygame.display.set_mode(self.size)
         pygame.init()
+        player = PlayerDB({'character':'Cachimbo','name':'Anthony'})
+
 
     def load_service(self):
         content = self.service.get_data()

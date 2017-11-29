@@ -89,6 +89,6 @@ class PlayerDB():
         self.character = object['character']
         self.name = object['name']
         self.entrant = '2017-01'
-        self.graduate = '???????'
-        self.score = object['score'] if 'score' in object.keys() else 0 
+        self.graduate = '2019-01'
+        self.score = object['score'] if 'score' in object.keys() else 0
         self.lifes = 3
